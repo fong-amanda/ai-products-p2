@@ -15,8 +15,8 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
   --page:#E7E8EF; --page-ink:#23263A; --page-mute:#6B7086; --panel:#FFFFFF; --panel-line:#DADCE6;
   /* app tokens (the app itself keeps a light theme) */
-  --ink:#15182B; --ink2:#4A4F66; --mute:#868BA0; --line:#E7E8EF; --soft:#F3F4F8; --white:#fff;
-  --accent:#4B3FE0; --accent-ink:#3A2FC4; --accent-soft:#EDEBFE;
+  --ink:#15182B; --ink2:#4A4F66; --mute:#868BA0; --line:#E7E8EF; --soft:#FBF3F7; --white:#fff;
+  --accent:#D6318A; --accent-ink:#AE1F6C; --accent-soft:#FCE6F1;
   --go:#11795A; --go-soft:#E2F4EC; --warn:#A9530B; --warn-soft:#FFF0DF;
   --land:#EEF0EA; --water:#C8DCEE; --park:#D5E7CD; --bldg:#DFE2EA;
   --r-lg:22px; --r-md:16px; --r-sm:12px;
@@ -34,7 +34,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 svg{display:block}
 
 /* ---------- stage ---------- */
-.stage{min-height:100%;display:flex;align-items:center;justify-content:center;gap:40px;padding:28px 20px}
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 20px}
 .phone{position:relative;width:390px;height:844px;border-radius:52px;background:#0E1020;padding:10px;box-shadow:0 30px 70px rgba(20,22,40,.28),0 0 0 1px rgba(255,255,255,.06) inset;flex:none}
 .screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--land);color:var(--ink);isolation:isolate}
 .status{position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;font-weight:700;font-size:15px;z-index:30;pointer-events:none}
@@ -63,6 +63,15 @@ svg{display:block}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast svg{width:16px;height:16px;color:#8FE3BE}
 
+.notif{position:absolute;left:10px;right:10px;top:52px;z-index:45;display:flex;gap:11px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:20px;background:rgba(250,250,252,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(21,24,43,.22);transform:translateY(-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.25,1.1),opacity .3s}
+.notif.show{transform:none;opacity:1}
+.notif .nap{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.notif .nap svg{width:18px;height:18px}
+.notif .nk{flex:1;min-width:0}
+.notif .nt{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.notif .nt small{font-weight:500;color:var(--mute);font-size:12.5px}
+.notif .nb{font-size:13.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+@media (max-width:760px){.notif{top:10px}}
 /* ---------- sheet ---------- */
 .sheet{position:absolute;left:0;right:0;bottom:76px;background:var(--white);border-radius:26px 26px 0 0;box-shadow:0 -10px 34px rgba(21,24,43,.14);padding:8px 16px 14px;z-index:12;max-height:calc(100% - 118px);overflow-y:auto;transition:bottom .3s ease}
 .sheet.nonav{bottom:0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
@@ -71,7 +80,7 @@ svg{display:block}
 @keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
 .where{width:100%;display:flex;align-items:center;gap:12px;height:54px;padding:0 8px 0 16px;background:var(--soft);border-radius:var(--r-md);text-align:left;transition:background .15s}
-.where:hover{background:#ECEDF3}
+.where:hover{background:#F7E9F0}
 .where>svg{width:20px;height:20px;color:var(--ink)}
 .where .lbl{flex:1;font-size:19px;font-weight:700;letter-spacing:-.01em}
 .now{display:flex;align-items:center;gap:6px;background:var(--white);height:38px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(21,24,43,.08)}
@@ -115,14 +124,14 @@ svg{display:block}
 .btn.pri:hover{background:var(--accent-ink)}
 .btn.dark{background:var(--ink);color:#fff}
 .btn.sec{background:var(--soft);color:var(--ink)}
-.btn.sec:hover{background:#E9EAF1}
+.btn.sec:hover{background:#F5E4ED}
 .btn.link{height:40px;color:var(--accent-ink);font-size:15px}
 .btn.danger{color:#B4232F;height:44px;font-size:15px}
 .btn[disabled]{opacity:.6;pointer-events:none}
 .row2{display:flex;gap:10px}
 .row2 .btn{flex:1}
 .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:sp .8s linear infinite}
-.spin.dk{border-color:rgba(75,63,224,.2);border-top-color:var(--accent)}
+.spin.dk{border-color:rgba(214,49,138,.2);border-top-color:var(--accent)}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ---------- arrival card ---------- */
@@ -192,7 +201,7 @@ svg{display:block}
 .pay svg{width:22px;height:22px}
 .pay .ch{margin-left:auto;width:16px;height:16px;color:var(--mute)}
 .drv{display:flex;align-items:center;gap:12px;margin:14px 0}
-.av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#C9C3FF,#8C80F5);display:grid;place-items:center;font-weight:800;color:#fff;font-size:20px;flex:none}
+.av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F6B3D6,#D6318A);display:grid;place-items:center;font-weight:800;color:#fff;font-size:20px;flex:none}
 .drv .k{flex:1}
 .drv .k b{display:block;font-size:16px}
 .drv .k span{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--mute);margin-top:2px}
@@ -275,7 +284,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .demo p{font-size:13px;color:var(--page-mute);margin:0 0 16px;line-height:1.45}
 .dstep{display:flex;gap:12px;width:100%;text-align:left;padding:10px;border-radius:14px;transition:background .15s;color:var(--page-ink)}
 .dstep:hover{background:rgba(127,130,150,.12)}
-.dstep.act{background:rgba(75,63,224,.13)}
+.dstep.act{background:rgba(214,49,138,.13)}
 .dstep .dn{display:grid;margin:0;line-height:1;color:inherit;width:26px;height:26px;border-radius:50%;border:2px solid var(--panel-line);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .dstep.act .dn{color:#fff!important;background:var(--accent);border-color:var(--accent);color:#fff}
 .dstep b{display:block;font-size:14px}
@@ -314,13 +323,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="map" id="map"></div>
       <div class="top"><button class="fab" aria-label="Menu" data-act="menu" id="fabMenu"></button><button class="fab" aria-label="Recenter map" data-act="recenter" id="fabLoc"></button></div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <button class="notif" id="notif" data-act="notifTap" aria-label="Flight landed notification"></button>
       <div class="sheet" id="sheet"></div>
       <nav class="nav" id="nav" aria-label="Main"></nav>
       <div class="ov" id="ov" aria-hidden="true"></div>
     </div>
   </div>
-  <button class="dfab" data-act="demoOpen" id="dfab"></button>
-  <aside class="demo" id="demo" aria-label="Presenter controls"></aside>
 </div>
 
 <script>
@@ -405,7 +413,7 @@ function cityRoads(){
   return s;
 }
 const car=(x,y,r,id='')=>`<g ${id?`id="${id}" class="mv"`:''} style="transform:translate(${x}px,${y}px) rotate(${r}deg)"><rect x="-6" y="-10.5" width="12" height="21" rx="3.5" fill="#262B44"/><rect x="-4.3" y="-6" width="8.6" height="4.5" rx="1.2" fill="#A9B0D6"/><rect x="-4.3" y="4" width="8.6" height="2.5" rx="1" fill="#A9B0D6" opacity=".7"/></g>`;
-const meDot=(x,y)=>`<g id="meG" class="me mv" style="transform:translate(${x}px,${y}px)"><circle class="pulse" r="16" fill="#4B3FE0" opacity=".3"/><circle r="10" fill="#fff"/><circle r="7" fill="#4B3FE0"/></g>`;
+const meDot=(x,y)=>`<g id="meG" class="me mv" style="transform:translate(${x}px,${y}px)"><circle class="pulse" r="16" fill="#D6318A" opacity=".3"/><circle r="10" fill="#fff"/><circle r="7" fill="#D6318A"/></g>`;
 function buildMap(){
   const city=`<svg id="mCity" viewBox="0 0 390 844" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
     <rect width="390" height="844" fill="#EEF0EA"/>
@@ -423,9 +431,9 @@ function buildMap(){
     </g>
     <text x="34" y="200" class="hood">Boerum Hill</text><text x="250" y="250" class="hood">Gowanus</text>
     ${car(118,236,-14)}${car(286,330,76)}${car(70,380,-14)}${car(322,182,166)}
-    <path id="route" class="route" d="M195 300 L232 292 L210 196 L302 172 L286 82" fill="none" stroke="#4B3FE0" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="route" class="route" d="M195 300 L232 292 L210 196 L302 172 L286 82" fill="none" stroke="#D6318A" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
     <g id="dstPin" style="opacity:0;transition:opacity .4s .6s"><rect x="277" y="70" width="18" height="18" rx="4" fill="#15182B"/><rect x="282.5" y="75.5" width="7" height="7" rx="1.5" fill="#fff"/></g>
-    ${car(118,236,-14,'cityCar').replace('#262B44','#4B3FE0')}
+    ${car(118,236,-14,'cityCar').replace('#262B44','#D6318A')}
     ${meDot(195,300)}
   </svg>`;
   const air=`<svg id="mAir" class="off" viewBox="0 0 390 844" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
@@ -449,7 +457,7 @@ function buildMap(){
     <text x="22" y="252" class="rl">Arrivals road</text>
     <g transform="translate(304 256)"><rect x="-9" y="-9" width="18" height="18" rx="5" fill="#15182B"/><rect x="-3.5" y="-3.5" width="7" height="7" rx="1.5" fill="#fff"/></g>
     <g transform="translate(304 286)"><rect x="-64" y="-11" width="128" height="26" rx="13" fill="#15182B"/><text y="6" text-anchor="middle" style="font:700 11px var(--font);fill:#fff">Rideshare pickup · L2</text></g>
-    ${car(440,256,90,'airCar').replace('#262B44','#4B3FE0')}
+    ${car(440,256,90,'airCar').replace('#262B44','#D6318A')}
     ${meDot(112,138)}
   </svg>`;
   document.getElementById('map').innerHTML=city+air;
@@ -525,7 +533,7 @@ function arrivalSheet(){
   }else if(st==='near'){
     if(autoRun){
       const circ=113.1,off=circ*(1-S.countdown/10);
-      body=`<div class="cdwrap"><div class="ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#EDEBFE" stroke-width="4"/><circle class="rp" id="rp" cx="22" cy="22" r="18" fill="none" stroke="#4B3FE0" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg><b id="cdn">${S.countdown}</b></div><h2 class="atitle">Requesting your ride</h2></div>
+      body=`<div class="cdwrap"><div class="ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#FCE6F1" stroke-width="4"/><circle class="rp" id="rp" cx="22" cy="22" r="18" fill="none" stroke="#D6318A" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg><b id="cdn">${S.countdown}</b></div><h2 class="atitle">Requesting your ride</h2></div>
       <p class="asub">You're near pickup and the fare is within your limit.</p>${tracker()}${planBlock()}`;
       acts=`<div class="row2"><button class="btn sec" data-act="pause">${I.pause}Pause</button><button class="btn pri" data-act="requestNow">Request now</button></div>`;
     }else{
@@ -563,7 +571,7 @@ function optionsSheet(){
   <button class="btn pri" data-act="chooseRide">Choose ${sel.name}</button>`;
 }
 function carArt(id){
-  const col={standard:'#4B3FE0',wait:'#7D86A8',xl:'#15182B',priority:'#11795A'}[id];
+  const col={standard:'#D6318A',wait:'#7D86A8',xl:'#15182B',priority:'#11795A'}[id];
   const long=id==='xl';
   return `<svg class="rcar" viewBox="0 0 52 34"><path d="M${long?3:6} 22l3-8a4 4 0 0 1 3.7-2.5H${long?36:33}a5 5 0 0 1 4 2l${long?5:5} 6.5 4 1a3 3 0 0 1 2.3 3V26H${long?3:6}z" fill="${col}"/><path d="M14 13.5h8v6h-10zM24 13.5h8l4 6H24z" fill="#fff" opacity=".7"/><circle cx="${long?12:14}" cy="26" r="4" fill="#15182B"/><circle cx="${long?12:14}" cy="26" r="1.6" fill="#fff"/><circle cx="40" cy="26" r="4" fill="#15182B"/><circle cx="40" cy="26" r="1.6" fill="#fff"/></svg>`;
 }
@@ -659,7 +667,7 @@ function render(){
   sheet.classList.toggle('nonav',nonav);
   if(key!==lastKey){sheet.classList.remove('enter');void sheet.offsetWidth;sheet.classList.add('enter');sheet.scrollTop=0;lastKey=key}
   document.getElementById('nav').classList.toggle('hide',nonav);
-  renderOv();renderDemo();
+  renderOv();updateNotif();
 }
 function renderOv(){
   const ov=document.getElementById('ov');
@@ -676,7 +684,6 @@ function renderStatic(){
   document.getElementById('fabLoc').innerHTML=I.locate;
   const tabs=[['Ride','navRide',1],['Bikes','navBike'],['Activity','navAct'],['Account','person']];
   document.getElementById('nav').innerHTML=tabs.map(t=>`<button class="ni ${t[2]?'act':''}" data-act="tab" data-v="${t[0]}" ${t[2]?'aria-current="page"':''}>${I[t[1]]}${t[0]}</button>`).join('');
-  document.getElementById('dfab').innerHTML=I.play2+'Demo';
 }
 let toastT;
 function toast(msg){const t=document.getElementById('toast');t.innerHTML=I.check+msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
@@ -715,19 +722,47 @@ function startRequest(){
   later(()=>{S.arr=null;S.matchCtx='airport';S.view='matched';render()},2300);
 }
 function ensureEnabled(){if(!S.cfg.enabled){S.cfg.enabled=true;toast('Airport pickup turned on')}}
+/* ---- in-phone story (no visible controls) ---- */
+let storyT=[],notifT=null,runs=0,notifShown=false;
+function clearStory(){storyT.forEach(clearTimeout);storyT=[];clearTimeout(notifT);notifT=null}
+const story=(f,ms)=>storyT.push(setTimeout(f,ms));
+function updateNotif(){
+  const n=document.getElementById('notif');
+  const eligible=S.cfg.enabled&&!S.arr&&!S.overlay&&S.view==='home';
+  if(!eligible){n.classList.remove('show');clearTimeout(notifT);notifT=null;notifShown=false;return}
+  if(notifShown||notifT)return;
+  notifT=setTimeout(()=>{notifT=null;notifShown=true;
+    n.innerHTML=`<span class="nap">${I.plane}</span><span class="nk"><span class="nt">UA 1547 landed<small>now</small></span><span class="nb">42 min late. Your ride home is set for around 7:51 PM. Nothing is booked yet.</span></span>`;
+    n.classList.add('show')},2600);
+}
+function storyNext(){
+  if(S.arr==='landed'){clearStory();S.arr='baggage';render();story(storyNext,7000)}
+  else if(S.arr==='baggage'){clearStory();S.fare=fareFor(S.cfg)+(runs%2===1?14:0);S.paused=false;enterNear()}
+}
+function startStory(){
+  clearStory();clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.paused=false;S.fare=fareFor(S.cfg);
+  S.arr='landed';render();story(storyNext,7000);
+}
+document.getElementById('map').addEventListener('click',()=>{if(S.arr==='landed'||S.arr==='baggage')storyNext()});
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input'))return;
+  const m={'1':'before','2':'land','3':'bag','4':'near','5':'fare','f':'fare','6':'unc','u':'unc','0':'reset','r':'reset'}[e.key.toLowerCase()];
+  if(m)demo(m);
+});
 function demo(v){
+  clearStory();notifShown=false;
   clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.dest=null;S.demo=v;
   if(v==='reset'){const keep=S.cfg;S=fresh();S.cfg={...keep,enabled:false,limit:45,type:'standard',drop:'home',bag:true,auto:true};render();return}
   if(v==='before'){S.arr=null;S.paused=false;S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render();return}
   ensureEnabled();S.paused=false;S.fare=fareFor(S.cfg);
-  if(v==='land')S.arr='landed';
+  if(v==='land'){startStory();return}
   else if(v==='bag')S.arr='baggage';
   else if(v==='near'){enterNear();closeDemo();return}
   else if(v==='fare'){S.fare=fareFor(S.cfg)+14;S.arr='fareHigh'}
   else if(v==='unc')S.arr='uncertain';
   render();closeDemo();
 }
-function closeDemo(){document.getElementById('demo').classList.remove('open')}
+function closeDemo(){}
 
 /* ================= actions ================= */
 const A={
@@ -737,7 +772,7 @@ const A={
   backHome(){clearFlow();S.view='home';S.dest=null;render()},
   selRide(v){S.ride=v;render()},
   chooseRide(){S.view='matching';render();later(()=>{S.view='matched';S.matchCtx='city';render()},2200)},
-  doneRide(){const air=S.matchCtx==='airport';clearFlow();S.view='home';S.matchCtx=null;S.dest=null;S.arr=null;S.paused=false;S.demo=null;render();toast(air?'Ride booked · Dana arrives in 3 min':'Ride booked · Dana arrives in 4 min')},
+  doneRide(){const air=S.matchCtx==='airport';if(air)runs++;clearFlow();clearStory();notifShown=false;S.view='home';S.matchCtx=null;S.dest=null;S.arr=null;S.paused=false;S.demo=null;render();toast(air?'Ride booked · Dana arrives in 3 min':'Ride booked · Dana arrives in 4 min')},
   openSetup(){S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render()},
   dismissCard(){S.dismissed=true;render();toast('Hidden. Find it again under Account › Travel.')},
   setType(v){S.draft.type=v;renderOv()},
@@ -747,7 +782,7 @@ const A={
   setDrop(v){S.draft.drop=v;S.dropOpen=false;renderOv()},
   saveSetup(){const wasOn=S.cfg.enabled;S.setup='saving';renderOv();later(()=>{S.cfg={...S.draft,enabled:true};S.fare=fareFor(S.cfg);S.setup=wasOn?'form':'done';if(wasOn){S.overlay=null;render();toast('Changes saved')}else render()},900)},
   setupDone(){S.overlay=null;S.dismissed=false;render();toast('Airport pickup is on')},
-  turnOff(){S.cfg.enabled=false;S.overlay=null;S.arr=null;clearFlow();render();toast('Airport pickup turned off')},
+  turnOff(){clearStory();S.cfg.enabled=false;S.overlay=null;S.arr=null;clearFlow();render();toast('Airport pickup turned off')},
   pause(){clearFlow();S.paused=true;render()},
   resume(){S.paused=false;if(S.arr==='near')enterNear();else render()},
   requestNow(){startRequest()},
@@ -755,12 +790,13 @@ const A={
   waitFare(){clearFlow();S.arr='watching';render();later(()=>{S.fare=Math.min(S.cfg.limit,fareFor(S.cfg)+5);S.paused=false;toast(`Fare dropped to $${S.fare}`);enterNear()},4200)},
   stopWatch(){clearFlow();S.arr='fareHigh';render()},
   atPickup(){S.paused=false;enterNear()},
-  notYet(){clearFlow();S.arr='baggage';render();toast("Got it. We'll check again in a few minutes.")},
+  notYet(){clearFlow();clearStory();S.arr='baggage';render();story(storyNext,7000);toast("Got it. We'll check again in a few minutes.")},
   cancelReq(){clearFlow();S.paused=true;S.arr='near';render()},
   contact(){toast('Messaging is off in this prototype')},
   recenter(){toast('Map centered on you')},
   menu(){toast('Menu is out of scope for this prototype')},
   tab(v){if(v!=='Ride')toast(`${v} is out of scope for this prototype`)},
+  notifTap(){document.getElementById('notif').classList.remove('show');startStory()},
   demo(v){demo(v)},
   demoOpen(){document.getElementById('demo').classList.add('open')},
   demoClose(){closeDemo()}

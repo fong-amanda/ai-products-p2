@@ -34,7 +34,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 svg{display:block}
 
 /* ---------- stage ---------- */
-.stage{min-height:100%;display:flex;align-items:center;justify-content:center;gap:40px;padding:28px 20px}
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 20px}
 .phone{position:relative;width:390px;height:844px;border-radius:52px;background:#0E1020;padding:10px;box-shadow:0 30px 70px rgba(20,22,40,.28),0 0 0 1px rgba(255,255,255,.06) inset;flex:none}
 .screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--land);color:var(--ink);isolation:isolate}
 .status{position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;font-weight:700;font-size:15px;z-index:30;pointer-events:none}
@@ -63,6 +63,15 @@ svg{display:block}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast svg{width:16px;height:16px;color:#8FE3BE}
 
+.notif{position:absolute;left:10px;right:10px;top:52px;z-index:45;display:flex;gap:11px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:20px;background:rgba(250,250,252,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(21,24,43,.22);transform:translateY(-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.25,1.1),opacity .3s}
+.notif.show{transform:none;opacity:1}
+.notif .nap{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.notif .nap svg{width:18px;height:18px}
+.notif .nk{flex:1;min-width:0}
+.notif .nt{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.notif .nt small{font-weight:500;color:var(--mute);font-size:12.5px}
+.notif .nb{font-size:13.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+@media (max-width:760px){.notif{top:10px}}
 /* ---------- sheet ---------- */
 .sheet{position:absolute;left:0;right:0;bottom:76px;background:var(--white);border-radius:26px 26px 0 0;box-shadow:0 -10px 34px rgba(21,24,43,.14);padding:8px 16px 14px;z-index:12;max-height:calc(100% - 118px);overflow-y:auto;transition:bottom .3s ease}
 .sheet.nonav{bottom:0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
@@ -314,13 +323,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="map" id="map"></div>
       <div class="top"><button class="fab" aria-label="Menu" data-act="menu" id="fabMenu"></button><button class="fab" aria-label="Recenter map" data-act="recenter" id="fabLoc"></button></div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <button class="notif" id="notif" data-act="notifTap" aria-label="Flight landed notification"></button>
       <div class="sheet" id="sheet"></div>
       <nav class="nav" id="nav" aria-label="Main"></nav>
       <div class="ov" id="ov" aria-hidden="true"></div>
     </div>
   </div>
-  <button class="dfab" data-act="demoOpen" id="dfab"></button>
-  <aside class="demo" id="demo" aria-label="Presenter controls"></aside>
 </div>
 
 <script>
@@ -659,7 +667,7 @@ function render(){
   sheet.classList.toggle('nonav',nonav);
   if(key!==lastKey){sheet.classList.remove('enter');void sheet.offsetWidth;sheet.classList.add('enter');sheet.scrollTop=0;lastKey=key}
   document.getElementById('nav').classList.toggle('hide',nonav);
-  renderOv();renderDemo();
+  renderOv();updateNotif();
 }
 function renderOv(){
   const ov=document.getElementById('ov');
@@ -676,7 +684,6 @@ function renderStatic(){
   document.getElementById('fabLoc').innerHTML=I.locate;
   const tabs=[['Ride','navRide',1],['Bikes','navBike'],['Activity','navAct'],['Account','person']];
   document.getElementById('nav').innerHTML=tabs.map(t=>`<button class="ni ${t[2]?'act':''}" data-act="tab" data-v="${t[0]}" ${t[2]?'aria-current="page"':''}>${I[t[1]]}${t[0]}</button>`).join('');
-  document.getElementById('dfab').innerHTML=I.play2+'Demo';
 }
 let toastT;
 function toast(msg){const t=document.getElementById('toast');t.innerHTML=I.check+msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
@@ -715,19 +722,47 @@ function startRequest(){
   later(()=>{S.arr=null;S.matchCtx='airport';S.view='matched';render()},2300);
 }
 function ensureEnabled(){if(!S.cfg.enabled){S.cfg.enabled=true;toast('Airport pickup turned on')}}
+/* ---- in-phone story (no visible controls) ---- */
+let storyT=[],notifT=null,runs=0,notifShown=false;
+function clearStory(){storyT.forEach(clearTimeout);storyT=[];clearTimeout(notifT);notifT=null}
+const story=(f,ms)=>storyT.push(setTimeout(f,ms));
+function updateNotif(){
+  const n=document.getElementById('notif');
+  const eligible=S.cfg.enabled&&!S.arr&&!S.overlay&&S.view==='home';
+  if(!eligible){n.classList.remove('show');clearTimeout(notifT);notifT=null;notifShown=false;return}
+  if(notifShown||notifT)return;
+  notifT=setTimeout(()=>{notifT=null;notifShown=true;
+    n.innerHTML=`<span class="nap">${I.plane}</span><span class="nk"><span class="nt">UA 1547 landed<small>now</small></span><span class="nb">42 min late. Your ride home is set for around 7:51 PM. Nothing is booked yet.</span></span>`;
+    n.classList.add('show')},2600);
+}
+function storyNext(){
+  if(S.arr==='landed'){clearStory();S.arr='baggage';render();story(storyNext,7000)}
+  else if(S.arr==='baggage'){clearStory();S.fare=fareFor(S.cfg)+(runs%2===1?14:0);S.paused=false;enterNear()}
+}
+function startStory(){
+  clearStory();clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.paused=false;S.fare=fareFor(S.cfg);
+  S.arr='landed';render();story(storyNext,7000);
+}
+document.getElementById('map').addEventListener('click',()=>{if(S.arr==='landed'||S.arr==='baggage')storyNext()});
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input'))return;
+  const m={'1':'before','2':'land','3':'bag','4':'near','5':'fare','f':'fare','6':'unc','u':'unc','0':'reset','r':'reset'}[e.key.toLowerCase()];
+  if(m)demo(m);
+});
 function demo(v){
+  clearStory();notifShown=false;
   clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.dest=null;S.demo=v;
   if(v==='reset'){const keep=S.cfg;S=fresh();S.cfg={...keep,enabled:false,limit:45,type:'standard',drop:'home',bag:true,auto:true};render();return}
   if(v==='before'){S.arr=null;S.paused=false;S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render();return}
   ensureEnabled();S.paused=false;S.fare=fareFor(S.cfg);
-  if(v==='land')S.arr='landed';
+  if(v==='land'){startStory();return}
   else if(v==='bag')S.arr='baggage';
   else if(v==='near'){enterNear();closeDemo();return}
   else if(v==='fare'){S.fare=fareFor(S.cfg)+14;S.arr='fareHigh'}
   else if(v==='unc')S.arr='uncertain';
   render();closeDemo();
 }
-function closeDemo(){document.getElementById('demo').classList.remove('open')}
+function closeDemo(){}
 
 /* ================= actions ================= */
 const A={
@@ -737,7 +772,7 @@ const A={
   backHome(){clearFlow();S.view='home';S.dest=null;render()},
   selRide(v){S.ride=v;render()},
   chooseRide(){S.view='matching';render();later(()=>{S.view='matched';S.matchCtx='city';render()},2200)},
-  doneRide(){const air=S.matchCtx==='airport';clearFlow();S.view='home';S.matchCtx=null;S.dest=null;S.arr=null;S.paused=false;S.demo=null;render();toast(air?'Ride booked · Dana arrives in 3 min':'Ride booked · Dana arrives in 4 min')},
+  doneRide(){const air=S.matchCtx==='airport';if(air)runs++;clearFlow();clearStory();notifShown=false;S.view='home';S.matchCtx=null;S.dest=null;S.arr=null;S.paused=false;S.demo=null;render();toast(air?'Ride booked · Dana arrives in 3 min':'Ride booked · Dana arrives in 4 min')},
   openSetup(){S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render()},
   dismissCard(){S.dismissed=true;render();toast('Hidden. Find it again under Account › Travel.')},
   setType(v){S.draft.type=v;renderOv()},
@@ -747,7 +782,7 @@ const A={
   setDrop(v){S.draft.drop=v;S.dropOpen=false;renderOv()},
   saveSetup(){const wasOn=S.cfg.enabled;S.setup='saving';renderOv();later(()=>{S.cfg={...S.draft,enabled:true};S.fare=fareFor(S.cfg);S.setup=wasOn?'form':'done';if(wasOn){S.overlay=null;render();toast('Changes saved')}else render()},900)},
   setupDone(){S.overlay=null;S.dismissed=false;render();toast('Airport pickup is on')},
-  turnOff(){S.cfg.enabled=false;S.overlay=null;S.arr=null;clearFlow();render();toast('Airport pickup turned off')},
+  turnOff(){clearStory();S.cfg.enabled=false;S.overlay=null;S.arr=null;clearFlow();render();toast('Airport pickup turned off')},
   pause(){clearFlow();S.paused=true;render()},
   resume(){S.paused=false;if(S.arr==='near')enterNear();else render()},
   requestNow(){startRequest()},
@@ -755,12 +790,13 @@ const A={
   waitFare(){clearFlow();S.arr='watching';render();later(()=>{S.fare=Math.min(S.cfg.limit,fareFor(S.cfg)+5);S.paused=false;toast(`Fare dropped to $${S.fare}`);enterNear()},4200)},
   stopWatch(){clearFlow();S.arr='fareHigh';render()},
   atPickup(){S.paused=false;enterNear()},
-  notYet(){clearFlow();S.arr='baggage';render();toast("Got it. We'll check again in a few minutes.")},
+  notYet(){clearFlow();clearStory();S.arr='baggage';render();story(storyNext,7000);toast("Got it. We'll check again in a few minutes.")},
   cancelReq(){clearFlow();S.paused=true;S.arr='near';render()},
   contact(){toast('Messaging is off in this prototype')},
   recenter(){toast('Map centered on you')},
   menu(){toast('Menu is out of scope for this prototype')},
   tab(v){if(v!=='Ride')toast(`${v} is out of scope for this prototype`)},
+  notifTap(){document.getElementById('notif').classList.remove('show');startStory()},
   demo(v){demo(v)},
   demoOpen(){document.getElementById('demo').classList.add('open')},
   demoClose(){closeDemo()}
