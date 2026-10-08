@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ready at the Curb · Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#E7E8EF; --page-ink:#23263A; --page-mute:#6B7086; --panel:#FFFFFF; --panel-line:#DADCE6;
+  /* app tokens (the app itself keeps a light theme) */
+  --ink:#15182B; --ink2:#4A4F66; --mute:#868BA0; --line:#E7E8EF; --soft:#FBF3F7; --white:#fff;
+  --accent:#D6318A; --accent-ink:#AE1F6C; --accent-soft:#FCE6F1;
+  --go:#11795A; --go-soft:#E2F4EC; --warn:#A9530B; --warn-soft:#FFF0DF;
+  --land:#EEF0EA; --water:#C8DCEE; --park:#D5E7CD; --bldg:#DFE2EA;
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+  --font:'Figtree',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--page:#14151C;--page-ink:#ECEDF3;--page-mute:#9A9EB2;--panel:#1E2029;--panel-line:#2E313D;}
+}
+:root[data-theme="dark"]{--page:#14151C;--page-ink:#ECEDF3;--page-mute:#9A9EB2;--panel:#1E2029;--panel-line:#2E313D;}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;background:var(--page);font-family:var(--font);color:var(--page-ink);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block}
+
+/* ---------- stage ---------- */
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 20px}
+.phone{position:relative;width:390px;height:844px;border-radius:52px;background:#0E1020;padding:10px;box-shadow:0 30px 70px rgba(20,22,40,.28),0 0 0 1px rgba(255,255,255,.06) inset;flex:none}
+.screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--land);color:var(--ink);isolation:isolate}
+.status{position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;font-weight:700;font-size:15px;z-index:30;pointer-events:none}
+.status .isl{position:absolute;left:50%;top:10px;width:118px;height:32px;background:#0E1020;border-radius:20px;transform:translateX(-50%)}
+.status .ic{display:flex;gap:6px;align-items:center}
+
+/* ---------- map ---------- */
+.map{position:absolute;inset:0;z-index:0}
+.map svg{position:absolute;inset:0;width:100%;height:100%;transition:opacity .5s ease}
+.map svg.off{opacity:0;pointer-events:none}
+.rl{font:600 9.5px var(--font);fill:#8E93A6;letter-spacing:.02em}
+.hood{font:700 13px var(--font);fill:#A3A8B9;letter-spacing:.04em}
+.albl{font:700 11px var(--font);fill:#6E7489}
+.me .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+.mv{transition:transform 1.4s cubic-bezier(.45,0,.2,1)}
+.route{stroke-dasharray:900;stroke-dashoffset:900;transition:stroke-dashoffset 1s ease}
+.route.show{stroke-dashoffset:0}
+
+/* ---------- top floating ---------- */
+.top{position:absolute;left:16px;right:16px;top:56px;display:flex;justify-content:space-between;z-index:10}
+.fab{width:44px;height:44px;border-radius:50%;background:var(--white);display:grid;place-items:center;box-shadow:0 4px 14px rgba(21,24,43,.16);transition:transform .15s}
+.fab:active{transform:scale(.94)}
+.fab svg{width:20px;height:20px}
+.toast{position:absolute;left:50%;top:58px;transform:translate(-50%,-20px);opacity:0;background:var(--ink);color:#fff;font-weight:600;font-size:14px;padding:11px 16px;border-radius:999px;display:flex;gap:8px;align-items:center;z-index:40;transition:all .3s ease;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast svg{width:16px;height:16px;color:#8FE3BE}
+
+.notif{position:absolute;left:10px;right:10px;top:52px;z-index:45;display:flex;gap:11px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:20px;background:rgba(250,250,252,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(21,24,43,.22);transform:translateY(-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.25,1.1),opacity .3s}
+.notif.show{transform:none;opacity:1}
+.notif .nap{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.notif .nap svg{width:18px;height:18px}
+.notif .nk{flex:1;min-width:0}
+.notif .nt{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.notif .nt small{font-weight:500;color:var(--mute);font-size:12.5px}
+.notif .nb{font-size:13.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+@media (max-width:0px){.notif{top:10px}}
+/* ---------- sheet ---------- */
+.sheet{position:absolute;left:0;right:0;bottom:76px;background:var(--white);border-radius:26px 26px 0 0;box-shadow:0 -10px 34px rgba(21,24,43,.14);padding:8px 16px 14px;z-index:12;max-height:calc(100% - 118px);overflow-y:auto;transition:bottom .3s ease}
+.sheet.nonav{bottom:0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.grab{width:38px;height:5px;border-radius:3px;background:#D9DBE4;margin:0 auto 12px}
+.enter{animation:enter .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.where{width:100%;display:flex;align-items:center;gap:12px;height:54px;padding:0 8px 0 16px;background:var(--soft);border-radius:var(--r-md);text-align:left;transition:background .15s}
+.where:hover{background:#F7E9F0}
+.where>svg{width:20px;height:20px;color:var(--ink)}
+.where .lbl{flex:1;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.now{display:flex;align-items:center;gap:6px;background:var(--white);height:38px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(21,24,43,.08)}
+.now svg{width:15px;height:15px}
+
+.fcard{position:relative;display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:12px 14px;border-radius:var(--r-md);background:var(--accent-soft);text-align:left;transition:transform .15s}
+.fcard:active{transform:scale(.985)}
+.fcard.on{background:var(--go-soft)}
+.ficon{width:38px;height:38px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.fcard.on .ficon{background:var(--go)}
+.ficon svg{width:19px;height:19px}
+.ftext{flex:1;min-width:0}
+.ftext b{display:block;font-size:15px;font-weight:700}
+.ftext span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;line-height:1.35}
+.flink{font-size:14px;font-weight:700;color:var(--accent-ink);padding:8px 4px}
+.fcard.on .flink{color:var(--go)}
+.fx{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--mute)}
+.fx svg{width:13px;height:13px}
+
+.places{margin-top:6px}
+.prow{display:flex;align-items:center;gap:14px;width:100%;padding:11px 2px;text-align:left;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.pic{width:36px;height:36px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none}
+.pic svg{width:17px;height:17px}
+.ptx b{display:block;font-size:15px;font-weight:600}
+.ptx span{display:block;font-size:13px;color:var(--mute);margin-top:1px}
+
+/* ---------- nav ---------- */
+.nav{position:absolute;left:0;right:0;bottom:0;height:76px;background:var(--white);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:14;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));transition:transform .3s ease}
+.nav.hide{transform:translateY(110%)}
+.ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;color:var(--mute)}
+.ni svg{width:22px;height:22px}
+.ni.act{color:var(--ink)}
+.ni.act::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--accent);margin-top:-1px}
+
+/* ---------- buttons ---------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:999px;font-size:16px;font-weight:700;width:100%;transition:transform .12s,background .15s,opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn svg{width:18px;height:18px}
+.btn.pri{background:var(--accent);color:#fff}
+.btn.pri:hover{background:var(--accent-ink)}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.sec{background:var(--soft);color:var(--ink)}
+.btn.sec:hover{background:#F5E4ED}
+.btn.link{height:40px;color:var(--accent-ink);font-size:15px}
+.btn.danger{color:#B4232F;height:44px;font-size:15px}
+.btn[disabled]{opacity:.6;pointer-events:none}
+.row2{display:flex;gap:10px}
+.row2 .btn{flex:1}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:sp .8s linear infinite}
+.spin.dk{border-color:rgba(214,49,138,.2);border-top-color:var(--accent)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- arrival card ---------- */
+.ahead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.aflt{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2)}
+.aflt svg{width:15px;height:15px;color:var(--accent)}
+.pill{font-size:12px;font-weight:700;padding:5px 9px;border-radius:999px;white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.go{background:var(--go-soft);color:var(--go)}
+.pill.ac{background:var(--accent-soft);color:var(--accent-ink)}
+.atitle{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:10px 0 4px;line-height:1.15}
+.asub{font-size:14px;color:var(--ink2);line-height:1.45;margin:0}
+.cdwrap{display:flex;align-items:center;gap:14px;margin:10px 0 2px}
+.cdwrap .atitle{margin:0}
+.ring{position:relative;width:52px;height:52px;flex:none}
+.ring svg{width:52px;height:52px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:17px;font-weight:800}
+.ring .rp{transition:stroke-dashoffset 1s linear}
+
+.track{display:flex;align-items:flex-start;margin:16px 0 4px}
+.tstep{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;font-size:11.5px;font-weight:600;color:var(--mute);gap:6px}
+.tstep::before{content:"";position:absolute;top:9px;left:-50%;width:100%;height:3px;background:var(--line);z-index:0}
+.tstep:first-child::before{display:none}
+.tstep.done::before,.tstep.cur::before{background:var(--accent)}
+.tdot{width:21px;height:21px;border-radius:50%;background:var(--white);border:3px solid var(--line);position:relative;z-index:1;display:grid;place-items:center}
+.tstep.done .tdot{background:var(--accent);border-color:var(--accent);color:#fff}
+.tstep.done .tdot svg{width:11px;height:11px}
+.tstep.cur .tdot{border-color:var(--accent);box-shadow:0 0 0 5px var(--accent-soft)}
+.tstep.done,.tstep.cur{color:var(--ink)}
+
+.plan{margin:14px 0;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.prow2{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.prow2:last-child{border-bottom:0}
+.prow2 .k{flex:1;min-width:0}
+.prow2 .k b{display:block;font-weight:700}
+.prow2 .k span{display:block;color:var(--mute);font-size:12.5px;margin-top:1px}
+.mk{width:12px;height:12px;flex:none}
+.mk.o{border-radius:50%;border:3.5px solid var(--accent)}
+.mk.s{border-radius:3px;background:var(--ink)}
+.fare{font-weight:800;font-size:16px}
+.fare.over{color:var(--warn)}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:var(--r-sm);font-size:13.5px;line-height:1.4;margin:0 0 12px}
+.banner svg{width:17px;height:17px;flex:none;margin-top:1px}
+.banner.warn{background:var(--warn-soft);color:#6E3807}
+.banner.info{background:var(--soft);color:var(--ink2)}
+.bar{height:4px;border-radius:2px;background:var(--accent-soft);overflow:hidden;margin:14px 0 6px}
+.bar i{display:block;height:100%;width:40%;background:var(--accent);border-radius:2px;animation:bar 1.3s ease-in-out infinite}
+@keyframes bar{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+
+/* ---------- ride options / matched ---------- */
+.shead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.shead h2{font-size:19px;font-weight:800;margin:0;letter-spacing:-.01em;flex:1}
+.ib{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--soft);flex:none}
+.ib svg{width:18px;height:18px}
+.dsum{font-size:13.5px;color:var(--mute);margin:0 0 8px}
+.ropt{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:var(--r-md);border:2px solid transparent;text-align:left;transition:background .15s,border-color .15s}
+.ropt:hover{background:var(--soft)}
+.ropt.sel{border-color:var(--ink);background:var(--white)}
+.rcar{width:52px;height:34px;flex:none}
+.rtx{flex:1}
+.rtx b{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.rtx b small{font-weight:600;color:var(--mute);font-size:12.5px;display:flex;align-items:center;gap:2px}
+.rtx b small svg{width:12px;height:12px}
+.rtx span{display:block;font-size:13px;color:var(--mute);margin-top:2px}
+.rpr{font-weight:800;font-size:16px}
+.pay{display:flex;align-items:center;gap:10px;padding:12px 4px;font-size:14px;font-weight:600;border-top:1px solid var(--line);margin-top:8px}
+.pay svg{width:22px;height:22px}
+.pay .ch{margin-left:auto;width:16px;height:16px;color:var(--mute)}
+.drv{display:flex;align-items:center;gap:12px;margin:14px 0}
+.av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F6B3D6,#D6318A);display:grid;place-items:center;font-weight:800;color:#fff;font-size:20px;flex:none}
+.drv .k{flex:1}
+.drv .k b{display:block;font-size:16px}
+.drv .k span{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--mute);margin-top:2px}
+.drv .k span svg{width:12px;height:12px;color:var(--ink)}
+.plate{font-weight:800;letter-spacing:.06em;font-size:14px;background:var(--soft);padding:7px 10px;border-radius:8px}
+.meet{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border-radius:var(--r-sm);padding:12px;font-size:14px;line-height:1.4;margin-bottom:12px}
+.meet svg{width:18px;height:18px;flex:none;color:var(--accent);margin-top:1px}
+
+/* ---------- overlays ---------- */
+.ov{position:absolute;inset:0;background:var(--white);z-index:20;transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.ov.open{transform:none}
+.ovh{padding:60px 16px 10px;display:flex;align-items:center;gap:10px}
+.ovh h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em;flex:1}
+.ovb{flex:1;overflow-y:auto;padding:4px 16px 20px}
+.ovf{padding:12px 16px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--white)}
+.sbox{border-radius:var(--r-md);background:var(--soft);padding:4px 0;position:relative}
+.sline{display:flex;align-items:center;gap:12px;padding:0 14px;height:46px}
+.sline+.sline{border-top:1px solid #E3E4EC;margin-left:38px;padding-left:0}
+.sline input{flex:1;border:0;background:none;font:600 16px var(--font);color:var(--ink);outline:none;height:100%}
+.sline input::placeholder{color:var(--mute)}
+.sline .cur{font-size:16px;font-weight:600;color:var(--ink2)}
+.sbox .vl{position:absolute;left:19px;top:30px;height:22px;width:2px;background:#C9CBD6}
+.sec-t{font-size:13px;font-weight:700;color:var(--mute);margin:18px 2px 4px}
+.empty{padding:28px 6px;color:var(--ink2);font-size:14px;line-height:1.5}
+
+/* setup */
+.flight{display:flex;gap:12px;align-items:center;padding:14px;border-radius:var(--r-md);background:var(--ink);color:#fff}
+.flight .ficon{background:rgba(255,255,255,.14);display:grid;place-items:center;margin-top:0}
+.flight b{display:block;font-size:16px}
+.flight span{display:block;font-size:13px;color:#C3C6D6;margin-top:2px}
+.flight .src{margin-left:auto;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.12);padding:5px 8px;border-radius:999px;color:#E3E5EF;white-space:nowrap}
+.fld{margin-top:18px}
+.fld>label,.fld>.fl{display:block;font-size:14px;font-weight:700;margin:0 2px 8px}
+.pick{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line);text-align:left}
+.pick .k{flex:1}
+.pick .k b{display:block;font-size:15px}
+.pick .k span{display:block;font-size:13px;color:var(--mute)}
+.pick .ch{width:16px;height:16px;color:var(--mute);transition:transform .2s}
+.pick.open .ch{transform:rotate(90deg)}
+.dlist{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r-md) var(--r-md);margin-top:-8px;padding-top:8px}
+.dopt{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;text-align:left;font-size:14px}
+.dopt .ck{margin-left:auto;width:18px;height:18px;color:var(--accent)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sg{padding:10px 6px;border-radius:var(--r-sm);border:2px solid var(--line);text-align:center;transition:border-color .15s,background .15s}
+.sg b{display:block;font-size:14px}
+.sg span{display:block;font-size:12px;color:var(--mute);margin-top:2px}
+.sg.sel{border-color:var(--ink);background:var(--soft)}
+.tg{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border-radius:var(--r-md);border:1px solid var(--line);text-align:left}
+.tg+.tg{margin-top:10px}
+.tg .k{flex:1}
+.tg .k b{display:block;font-size:15px}
+.tg .k span{display:block;font-size:13px;color:var(--mute);margin-top:2px;line-height:1.35}
+.tg>svg{width:20px;height:20px;flex:none}
+.sw{width:46px;height:28px;border-radius:999px;background:#D3D5DF;position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(18px)}
+.limit{padding:14px;border-radius:var(--r-md);border:1px solid var(--line)}
+.limtop{display:flex;align-items:baseline;justify-content:space-between}
+.limtop b{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.limtop span{font-size:13px;color:var(--mute)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;margin:16px 0 8px;background:linear-gradient(to right,var(--accent) 0 var(--p,36%),#E1E2EA var(--p,36%) 100%);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:0 2px 6px rgba(21,24,43,.2);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--accent);cursor:pointer}
+.limnote{font-size:13px;line-height:1.4;padding:9px 11px;border-radius:10px;margin-top:6px}
+.limnote.ok{background:var(--go-soft);color:#0C5640}
+.limnote.lo{background:var(--warn-soft);color:#6E3807}
+.fine{font-size:12.5px;color:var(--mute);line-height:1.45;margin:16px 2px 0}
+.setdone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.okc{width:76px;height:76px;border-radius:50%;background:var(--go-soft);color:var(--go);display:grid;place-items:center;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+.okc svg{width:36px;height:36px}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.setdone h3{font-size:24px;font-weight:800;margin:18px 0 6px;letter-spacing:-.02em}
+.setdone p{margin:0;color:var(--ink2);font-size:15px;line-height:1.5;max-width:30ch}
+.sumry{width:100%;margin-top:22px;text-align:left;border:1px solid var(--line);border-radius:var(--r-md)}
+
+/* ---------- presenter panel ---------- */
+.demo{width:290px;background:var(--panel);border:1px solid var(--panel-line);border-radius:22px;padding:20px;color:var(--page-ink)}
+.demo h1{font-size:17px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+.demo p{font-size:13px;color:var(--page-mute);margin:0 0 16px;line-height:1.45}
+.dstep{display:flex;gap:12px;width:100%;text-align:left;padding:10px;border-radius:14px;transition:background .15s;color:var(--page-ink)}
+.dstep:hover{background:rgba(127,130,150,.12)}
+.dstep.act{background:rgba(214,49,138,.13)}
+.dstep .dn{display:grid;margin:0;line-height:1;color:inherit;width:26px;height:26px;border-radius:50%;border:2px solid var(--panel-line);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.dstep.act .dn{color:#fff!important;background:var(--accent);border-color:var(--accent);color:#fff}
+.dstep b{display:block;font-size:14px}
+.dstep b+span{display:block;font-size:12.5px;color:var(--page-mute);margin-top:2px;line-height:1.35}
+.dgrp{font-size:12px;font-weight:700;color:var(--page-mute);margin:14px 10px 4px}
+.dn.br{border-style:dashed}
+.dreset{margin-top:14px;width:100%;height:40px;border-radius:999px;border:1px solid var(--panel-line);font-weight:700;font-size:13.5px;color:var(--page-ink)}
+.dfab,.dclose{display:none}
+
+@media (max-width:0px){
+  .stage{padding:0;gap:0;height:100%;min-height:0}
+  .phone{width:100%;height:100%;border-radius:0;padding:0;box-shadow:none;background:none}
+  .screen{border-radius:0}
+  .status{display:none}
+  .top{top:14px}
+  .toast{top:16px}
+  .ovh{padding-top:16px}
+  .dfab{display:flex;position:fixed;top:calc(env(safe-area-inset-top,0px) + 18px);left:50%;transform:translateX(-50%);z-index:60;height:36px;padding:0 14px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;font-size:13px;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .dfab svg{width:14px;height:14px}
+  .demo{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);width:auto;z-index:70;transform:translateY(130%);transition:transform .3s ease;max-height:80%;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .demo.open{transform:none}
+  .dclose{display:grid;position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;place-items:center;background:rgba(127,130,150,.15)}
+  .dclose svg{width:14px;height:14px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* ===== walkthrough player ===== */
+body{overflow:hidden}
+.screen{pointer-events:none}
+.wt{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.wt-main{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px}
+.pwrap{position:relative;flex:none;transition:opacity .7s ease,transform .7s ease}
+.pwrap.dim{opacity:0;transform:scale(.97)}
+.pwrap .phone{position:absolute;left:0;top:0;transform-origin:0 0}
+/* opening line */
+.intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:32px;pointer-events:none;opacity:0;transition:opacity .7s ease}
+.intro.show{opacity:1}
+.intro div{max-width:16em;text-align:center;font-size:clamp(28px,4.4vw,54px);line-height:1.18;font-weight:800;letter-spacing:-.025em;color:var(--page-ink);transform:translateY(10px);transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.intro.show div{transform:none}
+.intro em{font-style:normal;color:var(--accent)}
+/* "what if" control beside the phone */
+.whatif{position:absolute;left:calc(100% + 36px);top:58%;display:flex;gap:12px;align-items:center;white-space:nowrap;padding:12px 18px 12px 12px;border-radius:18px;background:var(--panel);border:1px solid var(--panel-line);box-shadow:0 12px 30px rgba(20,22,40,.12);color:var(--page-ink);font-weight:700;font-size:15px;opacity:0;transform:translateX(-10px);transition:opacity .4s,transform .4s;pointer-events:none}
+.whatif.show{opacity:1;transform:none}
+.whatif .wn{width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+.whatif small{display:block;font-weight:600;color:var(--page-mute);font-size:12.5px;margin-top:1px}
+/* controls */
+.ctl{flex:none;display:flex;align-items:center;gap:16px;padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--panel-line);color:var(--page-ink)}
+.cb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;transition:background .15s}
+.cb:hover{background:rgba(127,130,150,.14)}
+.cb.main{background:var(--accent);color:#fff}
+.cb.main:hover{background:var(--accent-ink)}
+.cb svg{width:18px;height:18px}
+.time{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--page-mute);white-space:nowrap;min-width:84px;text-align:right}
+.tl{flex:1;display:flex;gap:4px;cursor:pointer;touch-action:none;padding:4px 0;outline-offset:6px;border-radius:8px}
+.tseg{position:relative;min-width:0;display:flex;flex-direction:column;gap:7px}
+.tseg span{font-size:12px;font-weight:700;color:var(--page-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.tseg span b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;margin-right:6px;font-size:10px;background:var(--panel-line);color:var(--page-ink)}
+.tseg.act span{color:var(--page-ink)}
+.tseg.act span b,.tseg.past span b{background:var(--accent);color:#fff}
+.tseg i{display:block;height:5px;border-radius:3px;background:var(--panel-line);overflow:hidden}
+.tseg i u{display:block;height:100%;width:0;background:var(--accent);border-radius:3px}
+.tl:hover .tseg i{height:7px;margin-top:-2px}
+/* overlays */
+.hl{position:fixed;z-index:80;border:3px solid var(--accent);border-radius:16px;box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 22%,transparent);pointer-events:none;opacity:0;transition:opacity .25s}
+.hl.on{opacity:1}
+.tapdot{position:fixed;z-index:90;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.55);border:3px solid rgba(21,24,43,.75);box-shadow:0 6px 18px rgba(0,0,0,.25);pointer-events:none;opacity:0}
+.endcard{position:absolute;inset:0;z-index:60;background:#1A0B2E;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 34px;opacity:0;transition:opacity .6s;pointer-events:none}
+.endcard.show{opacity:1}
+.endcard .ec{width:76px;height:76px;border-radius:50%;background:var(--accent);display:grid;place-items:center;margin-bottom:26px}
+.endcard .ec svg{width:34px;height:34px;color:#fff}
+.endcard h2{font-size:26px;line-height:1.25;margin:0 0 10px;font-weight:800}
+.endcard p{font-size:26px;line-height:1.25;margin:0;font-weight:800;color:#FF7AC8}
+.start{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--page);text-align:center;padding:24px}
+.start.hide{display:none}
+.start h1{margin:0;font-size:clamp(30px,4vw,44px);letter-spacing:-.02em;color:var(--page-ink)}
+.start h1 em{font-style:normal;color:var(--accent)}
+.start p{margin:0;color:var(--page-mute);font-size:15px;line-height:1.5}
+.start button{display:flex;align-items:center;gap:10px;height:56px;padding:0 26px;border-radius:999px;background:var(--accent);color:#fff;font-weight:800;font-size:17px;box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 40%,transparent)}
+.start button svg{width:18px;height:18px}
+@media (max-width:900px){
+  .wt-main{padding:14px}
+  .whatif{left:50%;top:12%;transform:translate(-50%,-8px);z-index:5}
+  .whatif.show{transform:translate(-50%,0)}
+  .ctl{padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px));gap:10px}
+  .tseg span{font-size:0}
+  .tseg span b{font-size:10px;margin:0}
+  .time{min-width:0}
+}
+
+</style>
+</head>
+<body>
+<div class="wt">
+  <main class="wt-main">
+    <div class="pwrap">
+      <div class="phone">
+    <div class="screen" id="screen">
+      <div class="status"><span>9:41</span><span class="isl"></span><span class="ic">
+        <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="currentColor"/><rect x="24" y="4" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".45"/></svg>
+      </span></div>
+      <div class="map" id="map"></div>
+      <div class="top"><button class="fab" aria-label="Menu" data-act="menu" id="fabMenu"></button><button class="fab" aria-label="Recenter map" data-act="recenter" id="fabLoc"></button></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <button class="notif" id="notif" data-act="notifTap" aria-label="Flight landed notification"></button>
+      <div class="sheet" id="sheet"></div>
+      <nav class="nav" id="nav" aria-label="Main"></nav>
+      <div class="ov" id="ov" aria-hidden="true"></div>
+      <div class="endcard" id="endcard"><span class="ec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h2>Lyft removes the decision of when to book.</h2><p>The traveler controls where and how much.</p></div>
+    </div>
+  </div>
+      <div class="whatif" id="whatIf"><span class="wn">!</span><span>Fare rises to $52<small>What if…</small></span></div>
+    </div>
+    <div class="intro" id="intro" aria-live="polite"><div>Now let's show you how it works. We will follow <em>one trip</em>, with <em>two possible outcomes</em>.</div></div>
+  </main>
+  <div class="ctl">
+    <button class="cb main" id="pp" aria-label="Play"></button>
+    <button class="cb" id="rs" aria-label="Restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg></button>
+    <div class="tl" id="tl" role="slider" tabindex="0" aria-label="Timeline" aria-valuemin="0"></div>
+    <span class="time" id="time">0:00 / 1:40</span>
+  </div>
+</div>
+<div class="tapdot" id="tapdot"></div>
+<div class="start" id="start"><h1>Ready at the <em>Curb</em></h1><p>One trip, two possible outcomes · 1:40</p><button id="go"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>Play walkthrough</button><p>Space to play or pause · ← → to skip · 1–5 to jump to a step</p></div>
+
+<script>
+/* ================= icons ================= */
+const sv=(d,o='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${o}>${d}</svg>`;
+const I={
+  plane:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`,
+  home:sv('<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
+  work:sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>'),
+  pin:sv('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
+  clock:sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  search:sv('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>','stroke-width="2.4"'),
+  back:sv('<path d="M15 18l-6-6 6-6"/>','stroke-width="2.4"'),
+  chev:sv('<path d="M9 6l6 6-6 6"/>'),
+  close:sv('<path d="M6 6l12 12M18 6L6 18"/>','stroke-width="2.4"'),
+  bag:sv('<rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V4h6v3M9 20v1M15 20v1M9 11v5M15 11v5"/>'),
+  bolt:sv('<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>'),
+  check:sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','stroke-width="2.8"'),
+  pause:sv('<path d="M9 5v14M15 5v14"/>','stroke-width="2.6"'),
+  play:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>`,
+  info:sv('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+  alert:sv('<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17h.01"/>'),
+  menu:sv('<path d="M4 7h16M4 12h16M4 17h16"/>','stroke-width="2.2"'),
+  locate:sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>','stroke-width="2.2"'),
+  star:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6L2.5 9.3l6.6-.8z"/></svg>`,
+  person:sv('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  msg:sv('<path d="M4 5h16v11H8l-4 4z"/>'),
+  phone:sv('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>'),
+  card:`<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" fill="#1F2A6B"/><rect x="2" y="8.5" width="20" height="2.5" fill="#F2B544"/></svg>`,
+  navRide:sv('<path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3.5" y="15" width="17" height="4.5" rx="1.5"/><path d="M6.5 19.5V21M17.5 19.5V21"/>'),
+  navBike:sv('<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9L8.5 6H7M14 6h2.5"/>'),
+  navAct:sv('<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>'),
+  play2:sv('<path d="M7 4l12 8-12 8z"/>')
+};
+
+/* ================= data ================= */
+const PLACES={
+  home:{name:'Home',addr:'214 Bergen St, Brooklyn',ic:'home'},
+  work:{name:'Work',addr:'115 W 18th St, Manhattan',ic:'work'},
+  lga:{name:'LaGuardia Airport (LGA)',addr:'Terminal B, Queens',ic:'plane'},
+  gct:{name:'Grand Central Terminal',addr:'89 E 42nd St, Manhattan',ic:'pin'},
+  bam:{name:'BAM Howard Gilman Opera House',addr:'30 Lafayette Ave, Brooklyn',ic:'pin'},
+  pros:{name:'Prospect Park Boathouse',addr:'Lincoln Rd, Brooklyn',ic:'pin'},
+  jfk:{name:'JFK Airport Terminal 4',addr:'Jamaica, Queens',ic:'plane'}
+};
+const DEST_MULT={home:.6,work:1,lga:1.45,gct:1.2,bam:.55,pros:.7,jfk:2.1};
+const RIDES=[
+  {id:'standard',name:'Standard',seats:4,base:24.1,note:'4 min away'},
+  {id:'wait',name:'Wait & Save',seats:4,base:19.9,note:'Pickup in 10–15 min'},
+  {id:'xl',name:'Extra Seats',seats:6,base:31.8,note:'6 min away'},
+  {id:'priority',name:'Priority',seats:4,base:29.4,note:'Fastest pickup, 2 min'}
+];
+const TYPES={
+  standard:{name:'Standard',fare:38,range:[36,42]},
+  xl:{name:'Extra Seats',fare:49,range:[47,54]},
+  priority:{name:'Priority',fare:46,range:[43,49]}
+};
+const dropAdd=c=>c.drop==='work'?8:0;
+const rangeFor=c=>{const r=TYPES[c.type].range,a=dropAdd(c);return[r[0]+a,r[1]+a]};
+const fareFor=c=>TYPES[c.type].fare+dropAdd(c);
+const money=n=>'$'+(Number.isInteger(n)?n:n.toFixed(2));
+
+/* ================= state ================= */
+const fresh=()=>({view:'home',overlay:null,dest:null,ride:'standard',q:'',
+  cfg:{enabled:false,limit:45,bag:true,type:'standard',auto:true,drop:'home'},
+  draft:null,setup:'form',dropOpen:false,dismissed:false,
+  arr:null,fare:38,paused:false,countdown:10,matchCtx:null,demo:null});
+let S=fresh();
+let timers=[],cd=null,lastKey='';
+const later=(f,ms)=>timers.push(setTimeout(f,ms));
+function clearFlow(){timers.forEach(clearTimeout);timers=[];clearInterval(cd);cd=null}
+
+/* ================= map ================= */
+function cityRoads(){
+  let s='';
+  for(let k=0;k<18;k++){const x=-300+62*k,m=k%3===0;
+    if(m)s+=`<line x1="${x}" y1="-400" x2="${x}" y2="1300" stroke="#DCDFE6" stroke-width="13"/>`;
+    s+=`<line x1="${x}" y1="-400" x2="${x}" y2="1300" stroke="#fff" stroke-width="${m?11:5}"/>`}
+  for(let k=0;k<28;k++){const y=-260+54*k,m=k%3===0;
+    if(m)s+=`<line x1="-500" y1="${y}" x2="900" y2="${y}" stroke="#DCDFE6" stroke-width="13"/>`;
+    s+=`<line x1="-500" y1="${y}" x2="900" y2="${y}" stroke="#fff" stroke-width="${m?11:5}"/>`}
+  return s;
+}
+const car=(x,y,r,id='')=>`<g ${id?`id="${id}" class="mv"`:''} style="transform:translate(${x}px,${y}px) rotate(${r}deg)"><rect x="-6" y="-10.5" width="12" height="21" rx="3.5" fill="#262B44"/><rect x="-4.3" y="-6" width="8.6" height="4.5" rx="1.2" fill="#A9B0D6"/><rect x="-4.3" y="4" width="8.6" height="2.5" rx="1" fill="#A9B0D6" opacity=".7"/></g>`;
+const meDot=(x,y)=>`<g id="meG" class="me mv" style="transform:translate(${x}px,${y}px)"><circle class="pulse" r="16" fill="#D6318A" opacity=".3"/><circle r="10" fill="#fff"/><circle r="7" fill="#D6318A"/></g>`;
+function buildMap(){
+  const city=`<svg id="mCity" viewBox="0 0 390 844" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <rect width="390" height="844" fill="#EEF0EA"/>
+    <g transform="rotate(-14 195 420)">
+      <path d="M-400 -400 H900 V-60 C 600 -20, 380 -110, 160 -50 S -150 -10, -400 -70 Z" fill="#C8DCEE"/>
+      <rect x="262" y="330" width="118" height="96" rx="8" fill="#D5E7CD"/>
+      <rect x="-40" y="500" width="96" height="88" rx="8" fill="#D5E7CD"/>
+      ${cityRoads()}
+      <line x1="352" y1="-300" x2="352" y2="1300" stroke="#C8DCEE" stroke-width="14"/>
+      <text x="-60" y="127.5" class="rl">Atlantic Ave</text><text x="-10" y="289.5" class="rl">Bergen St</text>
+      <text x="-80" y="451.5" class="rl">Dean St</text>
+      <text transform="translate(75.5 20) rotate(90)" class="rl">Smith St</text>
+      <text transform="translate(261.5 200) rotate(90)" class="rl">3rd Ave</text>
+      <text x="282" y="382" class="rl" style="fill:#7FA078">Gowanus Green</text>
+    </g>
+    <text x="34" y="200" class="hood">Boerum Hill</text><text x="250" y="250" class="hood">Gowanus</text>
+    ${car(118,236,-14)}${car(286,330,76)}${car(70,380,-14)}${car(322,182,166)}
+    <path id="route" class="route" d="M195 300 L232 292 L210 196 L302 172 L286 82" fill="none" stroke="#D6318A" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <g id="dstPin" style="opacity:0;transition:opacity .4s .6s"><rect x="277" y="70" width="18" height="18" rx="4" fill="#15182B"/><rect x="282.5" y="75.5" width="7" height="7" rx="1.5" fill="#fff"/></g>
+    ${car(118,236,-14,'cityCar').replace('#262B44','#D6318A')}
+    ${meDot(195,300)}
+  </svg>`;
+  const air=`<svg id="mAir" class="off" viewBox="0 0 390 844" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <rect width="390" height="844" fill="#EEF0EA"/>
+    <rect width="390" height="150" fill="#C8DCEE"/>
+    <path d="M0 44 H390 V150 H0Z" fill="#E5E8E0"/>
+    <rect x="-10" y="66" width="410" height="26" rx="3" fill="#C5C8D2"/>
+    <line x1="0" y1="79" x2="390" y2="79" stroke="#fff" stroke-width="2" stroke-dasharray="14 12"/>
+    <path d="M112 92 V118 M277 92 V118" stroke="#D2D5DD" stroke-width="7"/>
+    <rect x="95" y="112" width="34" height="62" rx="9" fill="#DFE2EA" stroke="#CDD0DA"/>
+    <rect x="260" y="112" width="34" height="62" rx="9" fill="#DFE2EA" stroke="#CDD0DA"/>
+    <rect x="56" y="160" width="278" height="72" rx="16" fill="#DFE2EA" stroke="#CDD0DA"/>
+    <text x="195" y="190" text-anchor="middle" style="font:800 14px var(--font);fill:#4A4F66">Terminal B</text>
+    <text x="195" y="208" text-anchor="middle" class="albl" style="font-weight:600;font-size:10px">Baggage claim · Arrivals</text>
+    <text x="136" y="132" class="albl" style="font-size:10px">Gate B24</text>
+    <line x1="-10" y1="256" x2="400" y2="256" stroke="#DCDFE6" stroke-width="20"/>
+    <line x1="-10" y1="256" x2="400" y2="256" stroke="#fff" stroke-width="17"/>
+    <line x1="-10" y1="290" x2="400" y2="290" stroke="#fff" stroke-width="9"/>
+    <rect x="58" y="304" width="120" height="54" rx="8" fill="#E2E4EB"/>
+    <text x="118" y="335" text-anchor="middle" class="albl" style="font-size:10px">Parking</text>
+    <text x="22" y="252" class="rl">Arrivals road</text>
+    <g transform="translate(304 256)"><rect x="-9" y="-9" width="18" height="18" rx="5" fill="#15182B"/><rect x="-3.5" y="-3.5" width="7" height="7" rx="1.5" fill="#fff"/></g>
+    <g transform="translate(304 286)"><rect x="-64" y="-11" width="128" height="26" rx="13" fill="#15182B"/><text y="6" text-anchor="middle" style="font:700 11px var(--font);fill:#fff">Rideshare pickup · L2</text></g>
+    ${car(440,256,90,'airCar').replace('#262B44','#D6318A')}
+    ${meDot(112,138)}
+  </svg>`;
+  document.getElementById('map').innerHTML=city+air;
+}
+const AIRPOS={landed:[112,138],baggage:[192,214],near:[280,257]};
+function updateMap(){
+  const airMode=!!S.arr||S.matchCtx==='airport';
+  const c=document.getElementById('mCity'),a=document.getElementById('mAir');
+  c.classList.toggle('off',airMode);a.classList.toggle('off',!airMode);
+  // city route
+  const showRoute=!airMode&&['options','matching','matched'].includes(S.view);
+  c.querySelector('#route').classList.toggle('show',showRoute);
+  c.querySelector('#dstPin').style.opacity=showRoute?1:0;
+  const cc=c.querySelector('#cityCar');
+  cc.style.transform=(S.view==='matched'&&!airMode)?'translate(186px,286px) rotate(76deg)':'translate(118px,236px) rotate(-14deg)';
+  cc.style.opacity=(S.view==='matched'&&!airMode)?1:0;
+  // airport dot
+  const me=a.querySelector('#meG');
+  const p=S.arr==='landed'?AIRPOS.landed:S.arr==='baggage'?AIRPOS.baggage:AIRPOS.near;
+  me.style.transform=`translate(${p[0]}px,${p[1]}px)`;
+  const ac=a.querySelector('#airCar');
+  ac.style.transform=S.matchCtx==='airport'?'translate(328px,256px) rotate(90deg)':'translate(440px,256px) rotate(90deg)';
+}
+
+/* ================= sheet templates ================= */
+function placeRow(id){const p=PLACES[id];return `<button class="prow" data-act="pickPlace" data-v="${id}"><span class="pic">${I[p.ic]}</span><span class="ptx"><b>${p.name}</b><span>${p.addr}</span></span></button>`}
+function featureCard(){
+  if(S.dismissed&&!S.cfg.enabled)return'';
+  const c=S.cfg;
+  if(!c.enabled)return `<div class="fcard" role="button" tabindex="0" data-act="openSetup">
+      <span class="ficon">${I.plane}</span>
+      <span class="ftext"><b>Flying into LGA tonight?</b><span>UA 1547 lands 6:40 PM. We can time your ride home.</span></span>
+      <span class="flink">Set up</span>
+      <button class="fx" aria-label="Dismiss" data-act="dismissCard">${I.close}</button></div>`;
+  return `<div class="fcard on" role="button" tabindex="0" data-act="openSetup">
+      <span class="ficon">${I.plane}</span>
+      <span class="ftext"><b>Airport pickup on</b><span>UA 1547 · lands 6:40 PM · up to $${c.limit} · ${c.auto?'Auto-request':'Notify only'}</span></span>
+      <span class="flink">Edit</span></div>`;
+}
+function homeSheet(){
+  return `<div class="grab"></div>
+  <button class="where" data-act="openSearch">${I.search}<span class="lbl">Where to?</span><span class="now">${I.clock}Now</span></button>
+  ${featureCard()}
+  <div class="places">${placeRow('home')}${placeRow('work')}${placeRow('lga')}</div>`;
+}
+function tracker(){
+  const order=['landed','baggage','near'];
+  const idx=S.arr==='uncertain'?2:order.indexOf(S.arr);
+  const steps=[['Off the plane'],[S.cfg.bag?'Baggage claim':'Walk to exit'],['Rideshare pickup']];
+  return `<div class="track">${steps.map((s,i)=>{const cls=i<idx?'done':i===idx?'cur':'';return `<div class="tstep ${cls}"><span class="tdot">${i<idx?I.check:''}</span>${s[0]}</div>`}).join('')}</div>`;
+}
+function planBlock(){
+  const c=S.cfg,over=S.fare>c.limit,dp=PLACES[c.drop];
+  return `<div class="plan">
+    <div class="prow2"><span class="mk o"></span><span class="k"><b>Rideshare pickup</b><span>Terminal B, Level 2 · Zone 3</span></span></div>
+    <div class="prow2"><span class="mk s"></span><span class="k"><b>${dp.name}</b><span>${dp.addr}</span></span></div>
+    <div class="prow2"><span class="k"><b>${TYPES[c.type].name}</b><span>Your limit: $${c.limit}</span></span><span class="fare ${over?'over':''}">${over?'':'est. '}$${S.fare}</span></div>
+  </div>`;
+}
+function arrivalSheet(){
+  const c=S.cfg,st=S.arr,over=S.fare-c.limit;
+  let head=`<div class="ahead"><span class="aflt">${I.plane}UA 1547 landed 7:22 PM</span><span class="pill warn">42 min late</span></div>`;
+  let body='',acts='';
+  const autoRun=c.auto&&!S.paused;
+  const pausedBanner=S.paused?`<div class="banner info">${I.pause}<span>Auto-request is paused. Nothing will be booked until you resume or request.</span></div>`:
+    (!c.auto?`<div class="banner info">${I.info}<span>Auto-request is off. We'll let you know when you're near pickup.</span></div>`:'');
+  if(st==='landed'){
+    body=`<h2 class="atitle">Ready for pickup around 7:51 PM</h2><p class="asub">Your flight was late, so we moved your ride. Nothing is booked yet.</p>${tracker()}${planBlock()}${pausedBanner}`;
+    acts=S.paused?`<button class="btn pri" data-act="resume">${I.play}Resume auto-request</button>`:(c.auto?`<button class="btn sec" data-act="pause">${I.pause}Pause auto-request</button>`:'');
+  }else if(st==='baggage'){
+    body=`<h2 class="atitle">About 9 min to pickup</h2><p class="asub">${c.bag?"You're at baggage claim, carousel 5. We've allowed time for your bag.":"No checked bag, so you're heading straight to pickup."}</p>${tracker()}${planBlock()}${pausedBanner}`;
+    acts=S.paused?`<button class="btn pri" data-act="resume">${I.play}Resume auto-request</button>`:(c.auto?`<button class="btn sec" data-act="pause">${I.pause}Pause auto-request</button>`:'');
+  }else if(st==='near'){
+    if(autoRun){
+      const circ=113.1,off=circ*(1-S.countdown/10);
+      body=`<div class="cdwrap"><div class="ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#FCE6F1" stroke-width="4"/><circle class="rp" id="rp" cx="22" cy="22" r="18" fill="none" stroke="#D6318A" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg><b id="cdn">${S.countdown}</b></div><h2 class="atitle">Requesting your ride</h2></div>
+      <p class="asub">You're near pickup and the fare is within your limit.</p>${tracker()}${planBlock()}`;
+      acts=`<div class="row2"><button class="btn sec" data-act="pause">${I.pause}Pause</button><button class="btn pri" data-act="requestNow">Request now</button></div>`;
+    }else{
+      body=`<h2 class="atitle">You're near pickup</h2><p class="asub">Your fare is within your limit. Request when you're ready.</p>${tracker()}${planBlock()}${pausedBanner}`;
+      acts=`<button class="btn pri" data-act="requestNow">Request ride · $${S.fare}</button>${S.paused?`<button class="btn link" data-act="resume">Resume auto-request</button>`:''}`;
+    }
+  }else if(st==='uncertain'){
+    body=`<h2 class="atitle">Are you at the rideshare pickup?</h2><p class="asub">We can't pinpoint your location inside the terminal, so we haven't requested a ride.</p>${tracker()}${planBlock()}`;
+    acts=`<div class="row2"><button class="btn sec" data-act="notYet">Not yet</button><button class="btn pri" data-act="atPickup">I'm at pickup</button></div>`;
+  }else if(st==='fareHigh'){
+    head=`<div class="ahead"><span class="aflt">${I.plane}UA 1547 · at pickup</span><span class="pill warn">Over your limit</span></div>`;
+    body=`<h2 class="atitle">Fare is now $${S.fare}</h2><p class="asub">That's $${over} over your $${c.limit} limit, so we haven't requested a ride.</p>${planBlock()}`;
+    acts=`<button class="btn pri" data-act="approveFare">Request for $${S.fare}</button><div style="height:10px"></div><button class="btn sec" data-act="waitFare">${I.clock}Wait for a lower fare</button>`;
+  }else if(st==='watching'){
+    head=`<div class="ahead"><span class="aflt">${I.plane}UA 1547 · at pickup</span><span class="pill ac">Watching fare</span></div>`;
+    body=`<h2 class="atitle">Waiting for a lower fare</h2><p class="asub">We'll request automatically if it drops to $${c.limit} or less. Current fare: $${S.fare}.</p><div class="bar"><i></i></div>${planBlock()}`;
+    acts=`<button class="btn sec" data-act="stopWatch">Stop waiting</button>`;
+  }else if(st==='requesting'){
+    head=`<div class="ahead"><span class="aflt">${I.plane}UA 1547 · Terminal B</span><span class="pill go">$${S.fare} · within limit</span></div>`;
+    if(S.fare>c.limit)head=head.replace('within limit','approved');
+    body=`<h2 class="atitle">Finding your driver</h2><p class="asub">Matching you with a nearby driver for Terminal B, Level 2.</p><div class="bar"><i></i></div>${planBlock()}`;
+    acts=`<button class="btn sec" data-act="cancelReq">Cancel request</button>`;
+  }
+  return `<div class="grab"></div>${head}${body}${acts}`;
+}
+function optionsSheet(){
+  const d=PLACES[S.dest],m=DEST_MULT[S.dest]||1;
+  const sel=RIDES.find(r=>r.id===S.ride);
+  return `<div class="grab"></div>
+  <div class="shead"><button class="ib" aria-label="Back" data-act="backHome">${I.back}</button><h2>Choose a ride</h2></div>
+  <p class="dsum">Current location to ${d.name}</p>
+  ${RIDES.map(r=>`<button class="ropt ${r.id===S.ride?'sel':''}" data-act="selRide" data-v="${r.id}">
+    ${carArt(r.id)}<span class="rtx"><b>${r.name}<small>${I.person}${r.seats}</small></b><span>${r.note}</span></span><span class="rpr">${money(+(r.base*m).toFixed(2))}</span></button>`).join('')}
+  <div class="pay">${I.card}Visa •••• 4242 · Business${sv('<path d="M9 6l6 6-6 6"/>','class="ch"')}</div>
+  <button class="btn pri" data-act="chooseRide">Choose ${sel.name}</button>`;
+}
+function carArt(id){
+  const col={standard:'#D6318A',wait:'#7D86A8',xl:'#15182B',priority:'#11795A'}[id];
+  const long=id==='xl';
+  return `<svg class="rcar" viewBox="0 0 52 34"><path d="M${long?3:6} 22l3-8a4 4 0 0 1 3.7-2.5H${long?36:33}a5 5 0 0 1 4 2l${long?5:5} 6.5 4 1a3 3 0 0 1 2.3 3V26H${long?3:6}z" fill="${col}"/><path d="M14 13.5h8v6h-10zM24 13.5h8l4 6H24z" fill="#fff" opacity=".7"/><circle cx="${long?12:14}" cy="26" r="4" fill="#15182B"/><circle cx="${long?12:14}" cy="26" r="1.6" fill="#fff"/><circle cx="40" cy="26" r="4" fill="#15182B"/><circle cx="40" cy="26" r="1.6" fill="#fff"/></svg>`;
+}
+function matchingSheet(){
+  return `<div class="grab"></div><div class="shead"><h2>Finding your driver</h2></div><p class="asub">Connecting you with a nearby driver.</p><div class="bar"><i></i></div><div style="height:10px"></div><button class="btn sec" data-act="backHome">Cancel request</button>`;
+}
+function matchedSheet(){
+  const air=S.matchCtx==='airport';
+  return `<div class="grab"></div>
+  <div class="ahead"><span class="pill go">Driver on the way</span><span class="aflt">${air?'$'+S.fare+' · '+TYPES[S.cfg.type].name:'Standard'}</span></div>
+  <h2 class="atitle">Dana arrives in ${air?'3':'4'} min</h2>
+  <div class="drv"><span class="av">D</span><span class="k"><b>Dana · Gray Honda Accord</b><span>${I.star}4.94 · 2,180 rides</span></span><span class="plate">KJR 4821</span></div>
+  <div class="meet">${I.pin}<span>${air?'Meet at <b>Terminal B, Level 2, Zone 3</b>. Follow the rideshare signs from baggage claim.':'Meet at <b>214 Bergen St</b>. Dana will pull up on the north side of the street.'}</span></div>
+  <div class="row2" style="margin-bottom:10px"><button class="btn sec" data-act="contact">${I.msg}Message</button><button class="btn sec" data-act="contact">${I.phone}Call</button></div>
+  <button class="btn dark" data-act="doneRide">Back to home</button>`;
+}
+
+/* ================= overlays ================= */
+function searchOv(){
+  return `<div class="ovh"><button class="ib" aria-label="Close" data-act="closeOv">${I.back}</button><h2>Plan your ride</h2></div>
+  <div class="ovb">
+    <div class="sbox"><span class="vl"></span>
+      <div class="sline"><span class="mk o" style="width:12px;height:12px"></span><span class="cur">Current location</span></div>
+      <div class="sline"><input id="q" placeholder="Where to?" autocomplete="off" aria-label="Destination" value=""></div>
+    </div>
+    <div id="sres">${searchResults('')}</div>
+  </div>`;
+}
+function searchResults(q){
+  const ql=q.trim().toLowerCase();
+  const ids=Object.keys(PLACES).filter(id=>!ql||(PLACES[id].name+' '+PLACES[id].addr).toLowerCase().includes(ql));
+  if(!ids.length)return `<p class="empty">No places match “${q.replace(/[<>&"]/g,'')}”. Try a street, neighborhood, or airport code like LGA.</p>`;
+  return `<div class="sec-t">${ql?'Results':'Saved and recent'}</div><div class="places">${ids.map(placeRow).join('')}</div>`;
+}
+function setupOv(){
+  const d=S.draft;
+  if(S.setup==='done'){
+    const dp=PLACES[d.drop];
+    return `<div class="ovh"><span style="flex:1"></span></div>
+    <div class="setdone"><span class="okc">${I.check}</span><h3>Airport pickup is on</h3>
+      <p>After UA 1547 lands, we'll ${d.auto?'request your ride when you reach pickup':'let you know when you reach pickup'}, as long as the fare is $${d.limit} or less.</p>
+      <div class="sumry plan" style="margin-top:22px">
+        <div class="prow2"><span class="mk o"></span><span class="k"><b>LGA Terminal B pickup</b><span>Timed to your actual arrival</span></span></div>
+        <div class="prow2"><span class="mk s"></span><span class="k"><b>${dp.name}</b><span>${dp.addr}</span></span></div>
+        <div class="prow2"><span class="k"><b>${TYPES[d.type].name}${d.bag?' · Checked bag':''}</b><span>${d.auto?'Auto-request on':'Notify only'}</span></span><span class="fare">≤ $${d.limit}</span></div>
+      </div></div>
+    <div class="ovf"><button class="btn dark" data-act="setupDone">Done</button></div>`;
+  }
+  const r=rangeFor(d),dp=PLACES[d.drop],pct=((d.limit-25)/(80-25)*100).toFixed(1);
+  return `<div class="ovh"><button class="ib" aria-label="Close" data-act="closeOv">${I.back}</button><h2>Airport pickup</h2></div>
+  <div class="ovb">
+    <div class="flight"><span class="ficon">${I.plane}</span><span><b>UA 1547 · ORD to LGA</b><span>Thu, lands 6:40 PM · Terminal B</span></span><span class="src">From calendar</span></div>
+    <p class="fine" style="margin-top:10px">We'll follow your flight and time the request to when you actually reach pickup.</p>
+    <div class="fld"><span class="fl">Drop-off</span>
+      <button class="pick ${S.dropOpen?'open':''}" data-act="toggleDrop" aria-expanded="${S.dropOpen}"><span class="pic">${I[dp.ic]}</span><span class="k"><b>${dp.name}</b><span>${dp.addr}</span></span>${sv('<path d="M9 6l6 6-6 6"/>','class="ch"')}</button>
+      ${S.dropOpen?`<div class="dlist">${['home','work'].map(id=>`<button class="dopt" data-act="setDrop" data-v="${id}"><span class="pic">${I[PLACES[id].ic]}</span><span><b>${PLACES[id].name}</b><br><span style="color:var(--mute);font-size:13px">${PLACES[id].addr}</span></span>${d.drop===id?sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>','class="ck" stroke-width="2.8"'):''}</button>`).join('')}</div>`:''}
+    </div>
+    <div class="fld"><span class="fl">Ride type</span>
+      <div class="seg">${Object.keys(TYPES).map(k=>{const rr=rangeFor({...d,type:k});return `<button class="sg ${d.type===k?'sel':''}" data-act="setType" data-v="${k}" aria-pressed="${d.type===k}"><b>${TYPES[k].name}</b><span>$${rr[0]}–${rr[1]}</span></button>`}).join('')}</div>
+    </div>
+    <div class="fld"><label for="lim">Most you'll pay</label>
+      <div class="limit"><div class="limtop"><b id="limVal">$${d.limit}</b><span>Business card · reimbursable</span></div>
+        <input type="range" id="lim" min="25" max="80" step="1" value="${d.limit}" style="--p:${pct}%" aria-label="Fare limit in dollars">
+        <div id="limNote">${limNote(d)}</div></div>
+    </div>
+    <div class="fld">
+      <button class="tg" data-act="toggleBag" aria-pressed="${d.bag}">${I.bag}<span class="k"><b>I'm checking a bag</b><span>Adds time at baggage claim before we request.</span></span><span class="sw ${d.bag?'on':''}"></span></button>
+      <button class="tg" data-act="toggleAuto" aria-pressed="${d.auto}">${I.bolt}<span class="k"><b>Request automatically</b><span>${d.auto?'We request when you reach pickup and the fare is within your limit.':'We only notify you. You tap to request.'}</span></span><span class="sw ${d.auto?'on':''}"></span></button>
+    </div>
+    <p class="fine">Fares over your limit always need your OK. If we can't confirm your location, we ask before booking. You can pause anytime.</p>
+    ${S.cfg.enabled?`<button class="btn danger" data-act="turnOff">Turn off airport pickup</button>`:''}
+  </div>
+  <div class="ovf"><button class="btn pri" data-act="saveSetup" ${S.setup==='saving'?'disabled':''}>${S.setup==='saving'?'<span class="spin"></span>Saving':(S.cfg.enabled?'Save changes':'Turn on airport pickup')}</button></div>`;
+}
+function limNote(d){
+  const r=rangeFor(d);
+  return d.limit<r[1]
+    ?`<div class="limnote lo">Usual fare is $${r[0]}–$${r[1]}. If it's over $${d.limit}, we'll ask before booking.</div>`
+    :`<div class="limnote ok">Usual fare is $${r[0]}–$${r[1]}, within your limit.</div>`;
+}
+
+/* ================= render ================= */
+function render(){
+  updateMap();
+  const sheet=document.getElementById('sheet');
+  let html,key,nonav=false;
+  if(S.view==='options'){html=optionsSheet();key='opt';nonav=true}
+  else if(S.view==='matching'){html=matchingSheet();key='mtc';nonav=true}
+  else if(S.view==='matched'){html=matchedSheet();key='mtd'+S.matchCtx;nonav=true}
+  else if(S.arr){html=arrivalSheet();key='arr'+S.arr}
+  else{html=homeSheet();key='home'}
+  sheet.innerHTML=html;
+  sheet.classList.toggle('nonav',nonav);
+  if(key!==lastKey){sheet.classList.remove('enter');void sheet.offsetWidth;sheet.classList.add('enter');sheet.scrollTop=0;lastKey=key}
+  document.getElementById('nav').classList.toggle('hide',nonav);
+  renderOv();updateNotif();
+}
+function renderOv(){
+  const ov=document.getElementById('ov');
+  if(S.overlay){
+    ov.innerHTML=S.overlay==='search'?searchOv():setupOv();
+    ov.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=>{if(S.overlay)ov.classList.add('open')});
+    if(S.overlay==='search'){const q=ov.querySelector('#q');q.addEventListener('input',e=>{ov.querySelector('#sres').innerHTML=searchResults(e.target.value)});setTimeout(()=>q.focus({preventScroll:true}),350)}
+    if(S.overlay==='setup'&&S.setup!=='done'){const lim=ov.querySelector('#lim');lim&&lim.addEventListener('input',e=>{S.draft.limit=+e.target.value;ov.querySelector('#limVal').textContent='$'+S.draft.limit;e.target.style.setProperty('--p',((S.draft.limit-25)/55*100).toFixed(1)+'%');ov.querySelector('#limNote').innerHTML=limNote(S.draft)})}
+  }else{ov.classList.remove('open');ov.setAttribute('aria-hidden','true')}
+}
+function renderStatic(){
+  document.getElementById('fabMenu').innerHTML=I.menu;
+  document.getElementById('fabLoc').innerHTML=I.locate;
+  const tabs=[['Ride','navRide',1],['Bikes','navBike'],['Activity','navAct'],['Account','person']];
+  document.getElementById('nav').innerHTML=tabs.map(t=>`<button class="ni ${t[2]?'act':''}" data-act="tab" data-v="${t[0]}" ${t[2]?'aria-current="page"':''}>${I[t[1]]}${t[0]}</button>`).join('');
+}
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.innerHTML=I.check+msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+
+/* ================= presenter panel ================= */
+const DSTEPS=[
+  ['before','Before flying','Set flight, drop-off, bag and a $45 limit'],
+  ['land','Flight lands late','Estimate moves; nothing booked early'],
+  ['bag','At baggage claim','Carousel 5, time allowed for the bag'],
+  ['near','Near pickup','Terminal B, Level 2 · auto-request at $38']
+];
+const DBR=[['fare','Fare rises to $52','Pauses and asks to approve or wait'],['unc','Location unclear','Asks before booking']];
+function renderDemo(){
+  const step=(s,n,br)=>`<button class="dstep ${S.demo===s[0]?'act':''}" data-act="demo" data-v="${s[0]}"><span class="dn ${br?'br':''}">${n}</span><span><b>${s[1]}</b><span>${s[2]}</span></span></button>`;
+  document.getElementById('demo').innerHTML=`<button class="dclose" aria-label="Close controls" data-act="demoClose">${I.close}</button>
+    <h1>Presenter controls</h1><p>Jump to each moment of the airport story. Everything inside the phone is tappable too.</p>
+    ${DSTEPS.map((s,i)=>step(s,i+1)).join('')}
+    <div class="dgrp">What if…</div>
+    ${DBR.map(s=>step(s,'!',true)).join('')}
+    <button class="dreset" data-act="demo" data-v="reset">Reset to home</button>`;
+}
+
+/* ================= flow helpers ================= */
+function enterNear(){
+  clearFlow();
+  if(S.fare>S.cfg.limit){S.arr='fareHigh';render();return}
+  S.arr='near';
+  if(S.cfg.auto&&!S.paused){
+    S.countdown=10;
+    cd=setInterval(()=>{S.countdown--;if(S.countdown<=0){clearInterval(cd);cd=null;startRequest()}else{const n=document.getElementById('cdn'),rp=document.getElementById('rp');if(n)n.textContent=S.countdown;if(rp)rp.setAttribute('stroke-dashoffset',113.1*(1-S.countdown/10))}},1000);
+  }
+  render();
+}
+function startRequest(){
+  clearFlow();S.arr='requesting';render();
+  later(()=>{S.arr=null;S.matchCtx='airport';S.view='matched';render()},2300);
+}
+function ensureEnabled(){if(!S.cfg.enabled){S.cfg.enabled=true;toast('Airport pickup turned on')}}
+/* ---- in-phone story (no visible controls) ---- */
+let storyT=[],notifT=null,runs=0,notifShown=false;
+function clearStory(){storyT.forEach(clearTimeout);storyT=[];clearTimeout(notifT);notifT=null}
+const story=(f,ms)=>storyT.push(setTimeout(f,ms));
+function updateNotif(){
+  const n=document.getElementById('notif');
+  const eligible=S.cfg.enabled&&!S.arr&&!S.overlay&&S.view==='home';
+  if(!eligible){n.classList.remove('show');clearTimeout(notifT);notifT=null;notifShown=false;return}
+  if(notifShown||notifT)return;
+  notifT=setTimeout(()=>{notifT=null;notifShown=true;
+    n.innerHTML=`<span class="nap">${I.plane}</span><span class="nk"><span class="nt">UA 1547 landed<small>now</small></span><span class="nb">42 min late. Your ride home is set for around 7:51 PM. Nothing is booked yet.</span></span>`;
+    n.classList.add('show')},2600);
+}
+function storyNext(){
+  if(S.arr==='landed'){clearStory();S.arr='baggage';render();story(storyNext,7000)}
+  else if(S.arr==='baggage'){clearStory();S.fare=fareFor(S.cfg)+(runs%2===1?14:0);S.paused=false;enterNear()}
+}
+function startStory(){
+  clearStory();clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.paused=false;S.fare=fareFor(S.cfg);
+  S.arr='landed';render();story(storyNext,7000);
+}
+document.getElementById('map').addEventListener('click',()=>{if(S.arr==='landed'||S.arr==='baggage')storyNext()});
+function demo(v){
+  clearStory();notifShown=false;
+  clearFlow();S.overlay=null;S.view='home';S.matchCtx=null;S.dest=null;S.demo=v;
+  if(v==='reset'){const keep=S.cfg;S=fresh();S.cfg={...keep,enabled:false,limit:45,type:'standard',drop:'home',bag:true,auto:true};render();return}
+  if(v==='before'){S.arr=null;S.paused=false;S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render();return}
+  ensureEnabled();S.paused=false;S.fare=fareFor(S.cfg);
+  if(v==='land'){startStory();return}
+  else if(v==='bag')S.arr='baggage';
+  else if(v==='near'){enterNear();closeDemo();return}
+  else if(v==='fare'){S.fare=fareFor(S.cfg)+14;S.arr='fareHigh'}
+  else if(v==='unc')S.arr='uncertain';
+  render();closeDemo();
+}
+function closeDemo(){}
+
+/* ================= actions ================= */
+const A={
+  openSearch(){S.overlay='search';render()},
+  closeOv(){S.overlay=null;S.dropOpen=false;render()},
+  pickPlace(v){S.dest=v;S.overlay=null;S.view='options';S.ride='standard';S.arr=null;clearFlow();render()},
+  backHome(){clearFlow();S.view='home';S.dest=null;render()},
+  selRide(v){S.ride=v;render()},
+  chooseRide(){S.view='matching';render();later(()=>{S.view='matched';S.matchCtx='city';render()},2200)},
+  doneRide(){const air=S.matchCtx==='airport';if(air)runs++;clearFlow();clearStory();notifShown=false;S.view='home';S.matchCtx=null;S.dest=null;S.arr=null;S.paused=false;S.demo=null;render();toast(air?'Ride booked · Dana arrives in 3 min':'Ride booked · Dana arrives in 4 min')},
+  openSetup(){S.draft={...S.cfg};S.setup='form';S.dropOpen=false;S.overlay='setup';render()},
+  dismissCard(){S.dismissed=true;render();toast('Hidden. Find it again under Account › Travel.')},
+  setType(v){S.draft.type=v;renderOv()},
+  toggleBag(){S.draft.bag=!S.draft.bag;renderOv()},
+  toggleAuto(){S.draft.auto=!S.draft.auto;renderOv()},
+  toggleDrop(){S.dropOpen=!S.dropOpen;renderOv()},
+  setDrop(v){S.draft.drop=v;S.dropOpen=false;renderOv()},
+  saveSetup(){const wasOn=S.cfg.enabled;S.setup='saving';renderOv();later(()=>{S.cfg={...S.draft,enabled:true};S.fare=fareFor(S.cfg);S.setup=wasOn?'form':'done';if(wasOn){S.overlay=null;render();toast('Changes saved')}else render()},900)},
+  setupDone(){S.overlay=null;S.dismissed=false;render();toast('Airport pickup is on')},
+  turnOff(){clearStory();S.cfg.enabled=false;S.overlay=null;S.arr=null;clearFlow();render();toast('Airport pickup turned off')},
+  pause(){clearFlow();S.paused=true;render()},
+  resume(){S.paused=false;if(S.arr==='near')enterNear();else render()},
+  requestNow(){startRequest()},
+  approveFare(){startRequest()},
+  waitFare(){clearFlow();S.arr='watching';render();later(()=>{S.fare=Math.min(S.cfg.limit,fareFor(S.cfg)+5);S.paused=false;toast(`Fare dropped to $${S.fare}`);enterNear()},4200)},
+  stopWatch(){clearFlow();S.arr='fareHigh';render()},
+  atPickup(){S.paused=false;enterNear()},
+  notYet(){clearFlow();clearStory();S.arr='baggage';render();story(storyNext,7000);toast("Got it. We'll check again in a few minutes.")},
+  cancelReq(){clearFlow();S.paused=true;S.arr='near';render()},
+  contact(){toast('Messaging is off in this prototype')},
+  recenter(){toast('Map centered on you')},
+  menu(){toast('Menu is out of scope for this prototype')},
+  tab(v){if(v!=='Ride')toast(`${v} is out of scope for this prototype`)},
+  notifTap(){document.getElementById('notif').classList.remove('show');startStory()},
+  demo(v){demo(v)},
+  demoOpen(){document.getElementById('demo').classList.add('open')},
+  demoClose(){closeDemo()}
+};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t)return;e.stopPropagation();const f=A[t.dataset.act];if(f)f(t.dataset.v)});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button][data-act]')){e.preventDefault();e.target.click()}});
+
+buildMap();renderStatic();render();
+</script>
+<script>
+/* =====================================================================
+   WALKTHROUGH TIMELINE — edit here.
+   at:   seconds from start
+   note: the script line spoken here (for timing only, not shown)
+   do:   state change in the prototype (instant=true while scrubbing)
+   tap:  CSS selector to show a finger tap on, just before "do" runs
+   hl:   CSS selector to highlight, for "dur" seconds
+   tween:{dur, fn(p)} animate something from p=0 to p=1
+   ===================================================================== */
+const CHAPTERS=[
+  {at:0,   n:'',  title:'Intro'},
+  {at:6,   n:'1', title:'Before flying'},
+  {at:26.5,n:'2', title:'Lands late'},
+  {at:40.5,n:'3', title:'Bag and walk'},
+  {at:54,  n:'4', title:'At pickup · $38'},
+  {at:76.5,n:'5', title:'Fare rises · $52'}
+];
+const END=100;
+const BEATS=[
+  {at:0,   note:"Now let's show you how it works. We will follow one trip, with two possible outcomes.", do:()=>{home();intro(true)}},
+  {at:5.4, do:()=>intro(false)},
+
+  // 1 — setup
+  {at:6,   note:"Before flying, Maya enters her flight,"},
+  {at:6.6, tap:'.fcard', do:()=>openSetup()},
+  {at:8,   hl:'.ov .flight', dur:2.4},
+  {at:10.5,note:"her home address,"},
+  {at:11.2,tap:'.ov .pick', do:()=>{S.dropOpen=true;renderOv()}},
+  {at:12.6,tap:'.ov .dopt[data-v="home"]', do:()=>{S.draft.drop='home';S.dropOpen=false;renderOv()}},
+  {at:14,  note:"that she has checked luggage,"},
+  {at:15,  tap:'.ov [data-act="toggleBag"]', do:()=>{S.draft.bag=true;renderOv()}},
+  {at:17.5,note:"and her $45 limit."},
+  {at:17.8,hl:'.ov .limit', dur:3.6},
+  {at:18,  tween:{dur:2.2, fn:p=>setLimit(Math.round(30+15*ease(p)))}},
+  {at:21.6,tap:'.ov [data-act="saveSetup"]', do:()=>{S.setup='saving';renderOv()}},
+  {at:22.5,do:()=>{S.cfg={...S.draft,enabled:true};S.fare=38;S.setup='done';render()}},
+  {at:25,  tap:'.ov [data-act="setupDone"]', do:()=>{S.overlay=null;render()}},
+
+  // 2 — late landing
+  {at:26.5,note:"After landing, her flight is late.", do:()=>notif('UA 1547 landed','now','42 min late. Your ride home is set for around 7:51 PM. Nothing is booked yet.')},
+  {at:28.6,tap:'#notif', do:()=>{hideNotif();S.arr='landed';S.fare=38;render()}},
+  {at:29.2,hl:'.sheet .pill.warn', dur:2.6},
+  {at:32,  note:"Notice that Lyft does not book a driver right away."},
+  {at:32.4,hl:'.sheet .asub', dur:3.4},
+  {at:36,  note:"It updates its pickup estimate instead."},
+  {at:36.3,hl:'.sheet .atitle', dur:3.6},
+
+  // 3 — baggage and walk
+  {at:40.5,note:"Then Maya picks up her bag and walks toward the rideshare area.", do:()=>{S.arr='baggage';render()}},
+  {at:42,  hl:'.sheet .track', dur:3},
+  {at:45.5,do:()=>walkDot()},
+  {at:46,  note:"When she is close, a small card pops up."},
+  {at:47,  do:()=>notif('Rideshare pickup','2 min walk','Terminal B, Level 2. Follow the rideshare signs to Zone 3.')},
+  {at:49.5,note:"It says, “Rideshare pickup: Terminal B, Level 2.”"},
+  {at:49.8,hl:'#notif', dur:3.6},
+
+  // 4 — at pickup, $38
+  {at:54,  note:"When she's actually at the rideshare pickup area, her ride will be ordered automatically.", do:()=>{hideNotif();S.arr='near';S.paused=false;S.countdown=10;render()}},
+  {at:54.3,tween:{dur:14, fn:p=>setCountdown(10-Math.floor(p*7))}},
+  {at:55,  hl:'.sheet .cdwrap', dur:3.4},
+  {at:59,  note:"Estimated fare: $38."},
+  {at:59.3,hl:'.sheet .plan .prow2:last-child', dur:3},
+  {at:62.5,note:"The fare is under her limit, so she can confirm, or just let the pre-approved request go through."},
+  {at:63.2,hl:'.sheet .row2', dur:4.2},
+  {at:68,  note:"[A classmate taps the card]"},
+  {at:69.6,tap:'.sheet [data-act="requestNow"]', do:()=>{S.arr='requesting';render()}},
+  {at:72,  do:()=>{S.arr=null;S.matchCtx='airport';S.view='matched';render()}},
+  {at:72.5,hl:'.sheet .drv', dur:3},
+
+  // 5 — fare rises
+  {at:76.5,note:"But what if something goes wrong?", do:()=>whatIf(true)},
+  {at:79,  note:"Let's tap “Fare rises to $52.”"},
+  {at:81,  tap:'#whatIf', do:()=>{whatIf(false);S.view='home';S.matchCtx=null;S.arr='fareHigh';S.fare=52;render()}},
+  {at:82.5,note:"Now the app pauses and asks Maya:"},
+  {at:82.9,hl:'.sheet .atitle', dur:3.4},
+  {at:86.5,note:"do you want to approve the higher price, or wait?"},
+  {at:87,  hl:'.sheet [data-act="approveFare"]', dur:3.6},
+  {at:87.4,hl:'.sheet [data-act="waitFare"]', dur:3.2},
+  {at:91.5,note:"So she is always in control."},
+  {at:95,  do:()=>endCard(true)}
+];
+
+/* ================= prototype helpers ================= */
+updateNotif=function(){};               // the walkthrough controls the notification itself
+const $=s=>document.querySelector(s);
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function home(){clearFlow();clearStory();S=fresh();lastKey='';hideNotif();whatIf(false);endCard(false);intro(false);render()}
+function intro(on){$('#intro').classList.toggle('show',on);$('.pwrap').classList.toggle('dim',on)}
+function openSetup(){S.draft={...S.cfg,limit:30,bag:false,drop:'home'};S.setup='form';S.dropOpen=false;S.overlay='setup';render()}
+function setLimit(v){if(!S.draft||S.setup!=='form')return;S.draft.limit=v;const lim=$('#lim');if(!lim)return;
+  lim.value=v;lim.style.setProperty('--p',((v-25)/55*100).toFixed(1)+'%');$('#limVal').textContent='$'+v;$('#limNote').innerHTML=limNote(S.draft)}
+function setCountdown(v){if(S.arr!=='near')return;S.countdown=v;const n=$('#cdn'),rp=$('#rp');if(n)n.textContent=v;if(rp)rp.setAttribute('stroke-dashoffset',113.1*(1-v/10))}
+function walkDot(){const me=$('#mAir #meG');if(me)me.style.transform='translate(252px,246px)'}
+function notif(t,sm,b){const n=$('#notif');n.innerHTML=`<span class="nap">${I.plane}</span><span class="nk"><span class="nt">${t}<small>${sm}</small></span><span class="nb">${b}</span></span>`;n.classList.add('show')}
+function hideNotif(){$('#notif').classList.remove('show')}
+function whatIf(on){$('#whatIf').classList.toggle('show',on)}
+function endCard(on){$('#endcard').classList.toggle('show',on)}
+
+/* ================= player ================= */
+const EVENTS=BEATS.filter(b=>b.do||b.tween).sort((a,b)=>a.at-b.at);
+const TAPS=BEATS.filter(b=>b.tap), HLS=BEATS.filter(b=>b.hl);
+let t=0,playing=false,applied=0,last=performance.now();
+const hlPool=[],tapEl=$('#tapdot');
+function lastBefore(list,time){let r=null;for(const b of list){if(b.at<=time)r=b;else break}return r}
+function seek(T){
+  T=Math.max(0,Math.min(END,T));t=T;home();applied=0;
+  EVENTS.forEach(e=>{e.lastP=undefined});
+  for(const e of EVENTS){if(e.at>T)break;applied++;
+    if(e.do)e.do(true);
+    if(e.tween&&e.at+e.tween.dur<=T){e.tween.fn(1);e.lastP=1}}
+  tapEl.style.opacity=0;TAPS.forEach(b=>b.pos=null);
+}
+function step(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(playing){t+=dt;if(t>=END){t=END;setPlaying(false)}}
+  while(applied<EVENTS.length&&EVENTS[applied].at<=t){const e=EVENTS[applied++];if(e.do)e.do(false)}
+  for(const e of EVENTS){if(!e.tween||e.at>t)continue;const p=Math.min(1,(t-e.at)/e.tween.dur);if(p!==e.lastP){e.tween.fn(p);e.lastP=p}}
+  drawTaps();drawHls();drawUI();fit();requestAnimationFrame(step);
+}
+function center(sel){const el=$(sel);if(!el)return null;const r=el.getBoundingClientRect();if(!r.width)return null;return[r.left+r.width/2,r.top+r.height/2]}
+function drawTaps(){
+  let shown=false;
+  for(const b of TAPS){const ph=t-(b.at-.6);if(ph<0||ph>1){if(ph<0)b.pos=null;continue}
+    if(!b.pos)b.pos=center(b.tap);if(!b.pos)continue;shown=true;
+    const press=ph<.6?ph/.6:1, sc=ph<.6?1.25-.25*press:(ph<.75?.8:1.1), op=ph<.1?ph*10:ph>.8?(1-ph)*5:1;
+    tapEl.style.left=b.pos[0]+'px';tapEl.style.top=b.pos[1]+'px';tapEl.style.opacity=op;tapEl.style.transform=`scale(${sc})`}
+  if(!shown)tapEl.style.opacity=0;
+}
+function drawHls(){
+  const act=HLS.filter(b=>t>=b.at&&t<b.at+b.dur);
+  while(hlPool.length<act.length){const d=document.createElement('div');d.className='hl';document.body.appendChild(d);hlPool.push(d)}
+  hlPool.forEach((d,i)=>{const b=act[i];const el=b&&$(b.hl);
+    if(!el){d.classList.remove('on');return}
+    const r=el.getBoundingClientRect(),pad=6;d.style.left=(r.left-pad)+'px';d.style.top=(r.top-pad)+'px';d.style.width=(r.width+2*pad)+'px';d.style.height=(r.height+2*pad)+'px';d.classList.add('on')});
+}
+function fmt(s){s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function drawUI(){
+  const ci=CHAPTERS.reduce((a,c,i)=>c.at<=t?i:a,0);
+  document.querySelectorAll('.tseg').forEach((g,i)=>{const c=CHAPTERS[i],e=i+1<CHAPTERS.length?CHAPTERS[i+1].at:END;
+    g.classList.toggle('act',i===ci);g.classList.toggle('past',i<ci);
+    g.querySelector('u').style.width=Math.max(0,Math.min(1,(t-c.at)/(e-c.at)))*100+'%'});
+  const tl=$('#tl');tl.setAttribute('aria-valuenow',Math.round(t));tl.setAttribute('aria-valuetext',fmt(t)+', '+CHAPTERS[ci].title);
+  $('#time').textContent=fmt(t)+' / '+fmt(END);
+}
+const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+const PAUSE='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>';
+function setPlaying(p){if(p&&t>=END)seek(0);playing=p;$('#pp').innerHTML=p?PAUSE:PLAY;$('#pp').setAttribute('aria-label',p?'Pause':'Play');last=performance.now()}
+function buildUI(){
+  $('#pp').innerHTML=PLAY;
+  const tl=$('#tl');tl.setAttribute('aria-valuemax',END);
+  tl.innerHTML=CHAPTERS.map((c,i)=>{const e=i+1<CHAPTERS.length?CHAPTERS[i+1].at:END;
+    return `<div class="tseg" style="flex:${e-c.at}"><span>${c.n?`<b>${c.n}</b>`:'<b>•</b>'}${c.title}</span><i><u></u></i></div>`}).join('');
+  const toT=x=>{const segs=[...tl.querySelectorAll('.tseg')];for(let i=0;i<segs.length;i++){const r=segs[i].getBoundingClientRect(),c=CHAPTERS[i],e=i+1<CHAPTERS.length?CHAPTERS[i+1].at:END;
+    if(x<=r.right+2||i===segs.length-1)return c.at+Math.max(0,Math.min(1,(x-r.left)/r.width))*(e-c.at)}return 0};
+  let drag=false;
+  tl.addEventListener('pointerdown',e=>{drag=true;tl.setPointerCapture(e.pointerId);seek(toT(e.clientX))});
+  tl.addEventListener('pointermove',e=>{if(drag)seek(toT(e.clientX))});
+  tl.addEventListener('pointerup',()=>{drag=false});
+  tl.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();e.stopPropagation();seek(t+(e.key==='ArrowRight'?5:-5))}});
+  $('#pp').addEventListener('click',()=>setPlaying(!playing));
+  $('#rs').addEventListener('click',()=>{seek(0);setPlaying(true)});
+  $('#go').addEventListener('click',()=>{$('#start').classList.add('hide');seek(0);setPlaying(true)});
+  document.addEventListener('keydown',e=>{
+    if(e.key===' '){e.preventDefault();$('#start').classList.add('hide');setPlaying(!playing)}
+    else if(e.key==='ArrowRight')seek(t+5);else if(e.key==='ArrowLeft')seek(t-5);
+    else if(e.key.toLowerCase()==='r'){seek(0);setPlaying(true)}
+    else if(/^[1-5]$/.test(e.key)){$('#start').classList.add('hide');seek(CHAPTERS[+e.key].at)}
+  });
+}
+let fitKey='';
+function fit(){
+  const main=$('.wt-main'),k=main.clientWidth+'x'+main.clientHeight;if(k===fitKey)return;fitKey=k;
+  const w=$('.pwrap'),ph=w.querySelector('.phone'),narrow=innerWidth<=900;
+  const availH=main.clientHeight-(narrow?28:48), availW=main.clientWidth-(narrow?28:2*270);
+  const s=Math.max(.35,Math.min(1,availH/844,availW/390));
+  ph.style.transform=`scale(${s})`;w.style.width=390*s+'px';w.style.height=844*s+'px';
+}
+buildUI();seek(0);fit();addEventListener('resize',fit);requestAnimationFrame(step);
+
+</script>
+</body>
+</html>
